@@ -1,3 +1,3 @@
 # 🪣 emmer
 
-A flat file data manager you can operate with a REST API. Moreover, you can query all structured flat files (csv, json) with the API.
+A flat file data manager you can operate with a REST API. Moreover, you can query any structured file (csv, json) with the API.
