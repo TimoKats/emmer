@@ -15,7 +15,7 @@ func main() {
 
 	// adding
 	http.Handle("/api/table/add", server.AddHandler(server.Table))
-	http.Handle("/api/row/add", server.AddHandler(server.Row))
+	http.Handle("/api/entry/add", server.AddHandler(server.Entry))
 
 	// start the server
 	log.Println("server is running on http://localhost:8080")

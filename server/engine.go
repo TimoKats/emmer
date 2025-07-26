@@ -3,7 +3,7 @@ package server
 import (
 	"encoding/json"
 	"errors"
-	"log"
+	"fmt"
 	"path/filepath"
 	"slices"
 )
@@ -29,7 +29,7 @@ func (table *TablePayload) create() error {
 	case Json, Jsonl:
 		return createJSON(table.path())
 	case Csv:
-		return createCSV(table.path(), table.Columns, ';')
+		return createCSV(table.path(), table.Columns, table.Sep)
 	default:
 		return errors.New("unsupported file format")
 	}
@@ -37,7 +37,7 @@ func (table *TablePayload) create() error {
 
 func (table *TablePayload) add() error {
 	if !table.valid() {
-		return errors.New("invalid file format, check docs")
+		return errors.New("invalid payload")
 	}
 	if table.exists() {
 		return errors.New("table '" + table.Name + "' already exists")
@@ -45,19 +45,25 @@ func (table *TablePayload) add() error {
 	return table.create()
 }
 
-// row
+// entry
 
-func (row *RowPayload) add() error {
-	path, err := getFile("data/", row.TableName)
+func (entry *EntryPayload) add() error {
+	path, err := getFile("data/", entry.TableName)
 	if err != nil {
 		return err
 	}
 	switch filepath.Ext(path) {
 	case ".csv":
-		return appendCSVRow(path, row.Values, ';')
+		if sep, cols := getCSVInfo(path); cols == len(entry.Values) {
+			return appendCSVEntry(path, entry.Values, sep)
+		}
+		return errors.New("number of values incompatible with table")
 	case ".json":
-		log.Println("json!")
-		return nil
+		if data, err := getJson(path); err == nil {
+			data[entry.Key] = entry.Value
+			return updateJson(path, data)
+		}
+		return err
 	default:
 		return errors.New("file extension not supported")
 	}
@@ -74,13 +80,13 @@ func AddSwitch(body []byte, path Path) error {
 		if err = json.Unmarshal(body, &table); err == nil {
 			err = table.add()
 		}
-	case Row:
-		var row RowPayload
-		if err = json.Unmarshal(body, &row); err == nil {
-			err = row.add()
+	case Entry:
+		var entry EntryPayload
+		if err = json.Unmarshal(body, &entry); err == nil {
+			err = entry.add()
 		}
 	default:
-		err = errors.New("how did you get this error? hacker?")
+		err = errors.New(fmt.Sprint(path) + ", unknown add option")
 	}
 
 	return err

@@ -4,6 +4,14 @@ package server
 
 type Path int
 type Format string
+type Separator string
+
+const (
+	Comma     Separator = ","
+	Semicolon Separator = ";"
+	Tab       Separator = "\t"
+	Pipe      Separator = "|"
+)
 
 const (
 	Json  Format = "json"
@@ -13,7 +21,7 @@ const (
 
 const (
 	Table Path = iota
-	Row
+	Entry
 )
 
 // structs
@@ -24,13 +32,17 @@ type Response struct {
 }
 
 type TablePayload struct {
-	Name    string   `json:"name"`
-	Columns []string `json:"columns"`
-
-	FileFormat Format `json:"format"`
+	Name       string    `json:"name"`
+	Columns    []string  `json:"columns"`
+	FileFormat Format    `json:"format"`
+	Sep        Separator `json:"sep"`
 }
 
-type RowPayload struct {
-	TableName string   `json:"table"`
-	Values    []string `json:"values"`
+type EntryPayload struct {
+	TableName string `json:"table"`
+	// for csvs
+	Values []string `json:"values"`
+	// for jsons
+	Key   string `json:"key"`
+	Value any    `json:"value"`
 }
