@@ -10,6 +10,15 @@ import (
 
 // sep
 
+type Separator string
+
+const (
+	Comma     Separator = ","
+	Semicolon Separator = ";"
+	Tab       Separator = "\t"
+	Pipe      Separator = "|"
+)
+
 func (sep Separator) Rune() rune {
 	runes := []rune(sep)
 	if len(runes) == 0 {
@@ -36,7 +45,7 @@ func getFirstLine(path string) (string, error) {
 	return strings.TrimRight(line, "\r\n"), nil
 }
 
-func getCSVInfo(path string) (Separator, int) {
+func GetCSVInfo(path string) (Separator, int) {
 	line, err := getFirstLine(path)
 	if err != nil {
 		log.Println("when getting seperator: ", err)
@@ -56,7 +65,7 @@ func getCSVInfo(path string) (Separator, int) {
 	return bestSep, maxCols
 }
 
-func createCSV(path string, columns []string, sep Separator) error {
+func CreateCSV(path string, columns []string, sep Separator) error {
 	data := [][]string{columns}
 	f, _ := os.Create(path)
 	defer f.Close()
@@ -65,7 +74,7 @@ func createCSV(path string, columns []string, sep Separator) error {
 	return w.WriteAll(data)
 }
 
-func appendCSVEntry(path string, values []string, sep Separator) error {
+func AppendCSV(path string, values []string, sep Separator) error {
 	f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		return err

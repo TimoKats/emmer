@@ -29,7 +29,7 @@ func AddHandler(path Path) http.Handler {
 		if body = parsePost(w, r); body == nil {
 			return
 		}
-		if err := AddSwitch(body, path); err != nil {
+		if err := Add(body, path); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}

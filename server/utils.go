@@ -17,13 +17,7 @@ func configPath() string {
 	return dirname + ".emmer/"
 }
 
-func createJSON(path string) error {
-	f, err := os.Create(path)
-	defer f.Close()
-	f.WriteString("{}")
-	return err
-}
-
+// checks if filename exists (exclusive of extension) (to fs export)
 func getFile(path string, fileName string) (string, error) {
 	entries, err := os.ReadDir(path)
 	if err != nil {

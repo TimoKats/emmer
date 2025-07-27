@@ -1,6 +1,8 @@
 package server
 
 import (
+	io "github.com/TimoKats/emmer/server/io"
+
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -27,9 +29,9 @@ func (table *TablePayload) valid() bool {
 func (table *TablePayload) create() error {
 	switch table.FileFormat {
 	case Json, Jsonl:
-		return createJSON(table.path())
+		return io.CreateJSON(table.path())
 	case Csv:
-		return createCSV(table.path(), table.Columns, table.Sep)
+		return io.CreateCSV(table.path(), table.Columns, table.Sep)
 	default:
 		return errors.New("unsupported file format")
 	}
@@ -54,14 +56,14 @@ func (entry *EntryPayload) add() error {
 	}
 	switch filepath.Ext(path) {
 	case ".csv":
-		if sep, cols := getCSVInfo(path); cols == len(entry.Values) {
-			return appendCSVEntry(path, entry.Values, sep)
+		if sep, cols := io.GetCSVInfo(path); cols == len(entry.Values) {
+			return io.AppendCSV(path, entry.Values, sep)
 		}
 		return errors.New("number of values incompatible with table")
 	case ".json":
-		if data, err := getJson(path); err == nil {
+		if data, err := io.GetJson(path); err == nil {
 			data[entry.Key] = entry.Value
-			return updateJson(path, data)
+			return io.WriteJson(path, data)
 		}
 		return err
 	default:
@@ -69,9 +71,9 @@ func (entry *EntryPayload) add() error {
 	}
 }
 
-// generics
+// actions
 
-func AddSwitch(body []byte, path Path) error {
+func Add(body []byte, path Path) error {
 	var err error
 
 	switch path {
@@ -90,4 +92,12 @@ func AddSwitch(body []byte, path Path) error {
 	}
 
 	return err
+}
+
+func Del() error {
+	return nil
+}
+
+func Query() error {
+	return nil
 }

@@ -1,17 +1,13 @@
 package server
 
+import (
+	io "github.com/TimoKats/emmer/server/io"
+)
+
 // enums
 
 type Path int
 type Format string
-type Separator string
-
-const (
-	Comma     Separator = ","
-	Semicolon Separator = ";"
-	Tab       Separator = "\t"
-	Pipe      Separator = "|"
-)
 
 const (
 	Json  Format = "json"
@@ -32,10 +28,10 @@ type Response struct {
 }
 
 type TablePayload struct {
-	Name       string    `json:"name"`
-	Columns    []string  `json:"columns"`
-	FileFormat Format    `json:"format"`
-	Sep        Separator `json:"sep"`
+	Name       string       `json:"name"`
+	Columns    []string     `json:"columns"`
+	FileFormat Format       `json:"format"`
+	Sep        io.Separator `json:"sep"`
 }
 
 type EntryPayload struct {
