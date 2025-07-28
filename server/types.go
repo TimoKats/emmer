@@ -5,8 +5,13 @@ import (
 )
 
 // enums
-
+type Format string
 type Path int
+
+const (
+	Json Format = "json"
+	Csv         = "csv"
+)
 
 const (
 	Table Path = iota
@@ -23,7 +28,7 @@ type Response struct {
 type TablePayload struct {
 	Name       string       `json:"name"`
 	Columns    []string     `json:"columns"`
-	FileFormat io.Format    `json:"format"`
+	FileFormat Format       `json:"format"`
 	Sep        io.Separator `json:"sep"`
 }
 

@@ -7,11 +7,12 @@ import (
 	"errors"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
 type LocalIO struct {
-	path string
+	Folder string
 }
 
 func getFirstLine(path string) (string, error) {
@@ -107,4 +108,21 @@ func (io LocalIO) WriteJSON(path string, key string, value any) error {
 		return err
 	}
 	return os.WriteFile(path, bytes, 0644)
+}
+
+// checks if filename exists (exclusive of extension)
+func (io LocalIO) GetFileByName(path string, fileName string) (string, error) {
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return "", err
+	}
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			name := entry.Name()
+			if strings.TrimSuffix(name, filepath.Ext(name)) == fileName {
+				return filepath.Join(path, name), nil
+			}
+		}
+	}
+	return "", errors.New("file '" + fileName + "' not found")
 }
