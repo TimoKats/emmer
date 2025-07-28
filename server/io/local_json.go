@@ -5,14 +5,14 @@ import (
 	"os"
 )
 
-func CreateJSON(path string) error {
+func createLocalJSON(path string) error {
 	f, err := os.Create(path)
 	defer f.Close()
 	f.WriteString("{}")
 	return err
 }
 
-func GetJson(path string) (map[string]any, error) {
+func getLocalJson(path string) (map[string]any, error) {
 	var data map[string]any
 	file, err := os.ReadFile(path)
 	if err != nil {
@@ -22,7 +22,7 @@ func GetJson(path string) (map[string]any, error) {
 	return data, err
 }
 
-func WriteJson(path string, data map[string]any) error {
+func writeLocalJson(path string, data map[string]any) error {
 	bytes, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		return err

@@ -8,28 +8,7 @@ import (
 	"strings"
 )
 
-// sep
-
-type Separator string
-
-const (
-	Comma     Separator = ","
-	Semicolon Separator = ";"
-	Tab       Separator = "\t"
-	Pipe      Separator = "|"
-)
-
-func (sep Separator) Rune() rune {
-	runes := []rune(sep)
-	if len(runes) == 0 {
-		return ';'
-	}
-	return runes[0]
-}
-
-// file handling
-
-func getFirstLine(path string) (string, error) {
+func getLocalFirstLine(path string) (string, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return "", err
@@ -45,14 +24,14 @@ func getFirstLine(path string) (string, error) {
 	return strings.TrimRight(line, "\r\n"), nil
 }
 
-func GetCSVInfo(path string) (Separator, int) {
-	line, err := getFirstLine(path)
+func getLocalCSVInfo(path string) (Separator, int) {
+	line, err := getLocalFirstLine(path)
 	if err != nil {
 		log.Println("when getting seperator: ", err)
 	}
-	separators := []Separator{Comma, Semicolon, Tab, Pipe}
 	maxCols := 0
-	var bestSep Separator = Comma // default
+	separators := []Separator{Comma, Semicolon, Tab, Pipe}
+	var bestSep Separator = Semicolon // default
 
 	for _, sep := range separators {
 		parts := strings.Split(line, string(sep))
@@ -65,7 +44,7 @@ func GetCSVInfo(path string) (Separator, int) {
 	return bestSep, maxCols
 }
 
-func CreateCSV(path string, columns []string, sep Separator) error {
+func createLocalCSV(path string, columns []string, sep Separator) error {
 	data := [][]string{columns}
 	f, _ := os.Create(path)
 	defer f.Close()
@@ -74,7 +53,7 @@ func CreateCSV(path string, columns []string, sep Separator) error {
 	return w.WriteAll(data)
 }
 
-func AppendCSV(path string, values []string, sep Separator) error {
+func appendLocalCSV(path string, values []string, sep Separator) error {
 	f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		return err

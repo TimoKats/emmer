@@ -12,26 +12,26 @@ import (
 
 // table
 
-func (table *TablePayload) path() string {
+func (table *TablePayload) path() string { // should be in local!
 	return "data/" + table.Name + "." + string(table.FileFormat)
 }
 
-func (table *TablePayload) exists() bool {
-	filePath, err := getFile("data/", table.Name)
+func (table *TablePayload) exists() bool { // should be in local!
+	filePath, err := io.GetFileByName("data/", table.Name)
 	return err == nil && len(filePath) != 0
 }
 
-func (table *TablePayload) valid() bool {
-	var validFormats = []Format{Json, Jsonl, Csv}
+func (table *TablePayload) valid() bool { // should be in local!
+	var validFormats = []io.Format{io.Json, io.Csv}
 	return slices.Contains(validFormats, table.FileFormat)
 }
 
 func (table *TablePayload) create() error {
 	switch table.FileFormat {
-	case Json, Jsonl:
-		return io.CreateJSON(table.path())
-	case Csv:
-		return io.CreateCSV(table.path(), table.Columns, table.Sep)
+	case io.Json:
+		return io.CreateJSON(table.path(), io.Local) // this can be an env
+	case io.Csv:
+		return io.CreateCSV(table.path(), table.Columns, table.Sep, io.Local)
 	default:
 		return errors.New("unsupported file format")
 	}
@@ -50,22 +50,15 @@ func (table *TablePayload) add() error {
 // entry
 
 func (entry *EntryPayload) add() error {
-	path, err := getFile("data/", entry.TableName)
+	path, err := io.GetFileByName("data/", entry.TableName) // put th
 	if err != nil {
 		return err
 	}
 	switch filepath.Ext(path) {
 	case ".csv":
-		if sep, cols := io.GetCSVInfo(path); cols == len(entry.Values) {
-			return io.AppendCSV(path, entry.Values, sep)
-		}
-		return errors.New("number of values incompatible with table")
+		return io.UpdateCSV(path, entry.Values, io.Local)
 	case ".json":
-		if data, err := io.GetJson(path); err == nil {
-			data[entry.Key] = entry.Value
-			return io.WriteJson(path, data)
-		}
-		return err
+		return io.UpdateJSON(path, entry.Key, entry.Value, io.Local)
 	default:
 		return errors.New("file extension not supported")
 	}

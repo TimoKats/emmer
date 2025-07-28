@@ -1,5 +1,7 @@
 package server
 
+// example...
+
 import (
 	"errors"
 	"os"
@@ -8,7 +10,7 @@ import (
 )
 
 // returns default config path (~/.emmer/) or value in EMPATH
-func configPath() string {
+func EmmerPath() string {
 	customPath := os.Getenv("EMPATH")
 	dirname, _ := os.UserHomeDir()
 	if len(customPath) > 0 {
@@ -18,7 +20,7 @@ func configPath() string {
 }
 
 // checks if filename exists (exclusive of extension) (to fs export)
-func getFile(path string, fileName string) (string, error) {
+func GetFileByName(path string, fileName string) (string, error) {
 	entries, err := os.ReadDir(path)
 	if err != nil {
 		return "", err
@@ -32,4 +34,8 @@ func getFile(path string, fileName string) (string, error) {
 		}
 	}
 	return "", errors.New("file '" + fileName + "' not found")
+}
+
+func ReadLocal(path string) ([]byte, error) {
+	return os.ReadFile(path)
 }
