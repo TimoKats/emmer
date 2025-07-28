@@ -10,6 +10,10 @@ import (
 	"slices"
 )
 
+// something
+
+var test io.IO = io.LocalIO{}
+
 // table
 
 func (table *TablePayload) path() string { // should be in local!
@@ -29,9 +33,9 @@ func (table *TablePayload) valid() bool { // should be in local!
 func (table *TablePayload) create() error {
 	switch table.FileFormat {
 	case io.Json:
-		return io.CreateJSON(table.path(), io.Local) // this can be an env
+		return test.CreateJSON(table.path()) // this can be an env
 	case io.Csv:
-		return io.CreateCSV(table.path(), table.Columns, table.Sep, io.Local)
+		return test.CreateCSV(table.path(), table.Columns, table.Sep)
 	default:
 		return errors.New("unsupported file format")
 	}
@@ -50,15 +54,16 @@ func (table *TablePayload) add() error {
 // entry
 
 func (entry *EntryPayload) add() error {
-	path, err := io.GetFileByName("data/", entry.TableName) // put th
+	path, err := io.GetFileByName("data/", entry.TableName)
+
 	if err != nil {
 		return err
 	}
 	switch filepath.Ext(path) {
 	case ".csv":
-		return io.UpdateCSV(path, entry.Values, io.Local)
+		return test.AppendCSV(path, entry.Values)
 	case ".json":
-		return io.UpdateJSON(path, entry.Key, entry.Value, io.Local)
+		return test.WriteJSON(path, entry.Key, entry.Value)
 	default:
 		return errors.New("file extension not supported")
 	}
