@@ -35,3 +35,16 @@ func AddHandler(path Path) http.Handler {
 		}
 	})
 }
+
+func DelHandler(path Path) http.Handler {
+	var body []byte
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if body = parsePost(w, r); body == nil {
+			return
+		}
+		if err := Del(body, path); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+	})
+}

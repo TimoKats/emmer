@@ -1,6 +1,9 @@
 package server
 
 import (
+	"log"
+	"os"
+
 	io "github.com/TimoKats/emmer/server/io"
 
 	"encoding/json"
@@ -10,9 +13,7 @@ import (
 	"slices"
 )
 
-// select the correct filesystem
-
-var fs io.IO = io.LocalIO{Folder: "/home/timokats/.emmer/"}
+var fs io.IO
 
 // table
 
@@ -49,6 +50,13 @@ func (table *TablePayload) add() error {
 		return errors.New("table '" + table.Name + "' already exists")
 	}
 	return table.create()
+}
+
+func (table *TablePayload) del() error {
+	if !table.exists() {
+		return errors.New("table '" + table.Name + "' doesn't exist")
+	}
+	return fs.Delete(table.path())
 }
 
 // entry
@@ -92,10 +100,37 @@ func Add(body []byte, path Path) error {
 	return err
 }
 
-func Del() error {
-	return nil
+func Del(body []byte, path Path) error {
+	var err error
+
+	switch path {
+	case Table:
+		var table TablePayload
+		if err = json.Unmarshal(body, &table); err == nil {
+			err = table.del()
+		}
+	default:
+		err = errors.New(fmt.Sprint(path) + ", unknown add option")
+	}
+
+	return err
 }
 
 func Query() error {
 	return nil
+}
+
+func init() {
+	env := os.Getenv("EMMER_FS")
+	switch env {
+	case "aws":
+		log.Println("aws not implemented yet")
+	default:
+		fs = io.LocalIO{Folder: "/home/timokats/.emmer/"}
+	}
+	if fs == nil {
+		log.Println("EMMER_FS '" + env + "' invalid")
+		os.Exit(1)
+	}
+	log.Println("selected " + fs.Info())
 }

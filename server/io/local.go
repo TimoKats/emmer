@@ -131,3 +131,11 @@ func (io LocalIO) GetFileByName(path string, fileName string) (string, error) {
 	}
 	return "", errors.New("file '" + fileName + "' not found")
 }
+
+func (io LocalIO) Delete(path string) error {
+	return os.Remove(path)
+}
+
+func (io LocalIO) Info() string {
+	return "local fs with root dir: " + io.Folder
+}
