@@ -29,7 +29,7 @@ func AddHandler(path Path) http.Handler {
 		if body = parsePost(w, r); body == nil {
 			return
 		}
-		if err := Add(body, path); err != nil {
+		if err := add(body, path); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -42,7 +42,7 @@ func DelHandler(path Path) http.Handler {
 		if body = parsePost(w, r); body == nil {
 			return
 		}
-		if err := Del(body, path); err != nil {
+		if err := del(body, path); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}

@@ -13,9 +13,7 @@ import (
 
 var fs io.IO
 
-// actions
-
-func Add(body []byte, path Path) error {
+func add(body []byte, path Path) error {
 	var err error
 
 	switch path {
@@ -36,7 +34,7 @@ func Add(body []byte, path Path) error {
 	return err
 }
 
-func Del(body []byte, path Path) error {
+func del(body []byte, path Path) error {
 	var err error
 
 	switch path {
@@ -52,7 +50,7 @@ func Del(body []byte, path Path) error {
 	return err
 }
 
-func Query() error {
+func query() error {
 	return nil
 }
 
