@@ -31,14 +31,14 @@ func getFirstLine(path string) (string, error) {
 	return strings.TrimRight(line, "\r\n"), nil
 }
 
-func getCSVInfo(path string) (Separator, int) {
+func getCSVInfo(path string) (rune, int) {
 	line, err := getFirstLine(path)
 	if err != nil {
 		log.Println("when getting seperator: ", err)
 	}
 	maxCols := 0
-	separators := []Separator{Comma, Semicolon, Tab, Pipe}
-	var bestSep Separator = Semicolon // default
+	separators := []rune{',', ';', '\t', '|'}
+	var bestSep rune = ',' // default
 
 	for _, sep := range separators {
 		parts := strings.Split(line, string(sep))
@@ -51,12 +51,17 @@ func getCSVInfo(path string) (Separator, int) {
 	return bestSep, maxCols
 }
 
-func (io LocalIO) CreateCSV(path string, columns []string, sep Separator) error {
+func (io LocalIO) CreateCSV(path string, columns []string, sep string) error {
 	data := [][]string{columns}
-	f, _ := os.Create(path)
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
 	defer f.Close()
 	w := csv.NewWriter(f)
-	w.Comma = sep.Rune()
+	if len(sep) > 0 {
+		w.Comma = rune(sep[0])
+	}
 	return w.WriteAll(data)
 }
 
@@ -71,7 +76,7 @@ func (io LocalIO) AppendCSV(path string, values []string) error {
 	}
 	defer f.Close()
 	w := csv.NewWriter(f)
-	w.Comma = sep.Rune()
+	w.Comma = sep
 	err = w.Write(values)
 	if err != nil {
 		return err

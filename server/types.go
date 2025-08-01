@@ -1,9 +1,5 @@
 package server
 
-import (
-	io "github.com/TimoKats/emmer/server/io"
-)
-
 // enums
 type Format string
 type Path int
@@ -26,10 +22,10 @@ type Response struct {
 }
 
 type TablePayload struct {
-	Name       string       `json:"name"`
-	Columns    []string     `json:"columns"`
-	FileFormat Format       `json:"format"`
-	Sep        io.Separator `json:"sep"`
+	Name       string   `json:"name"`
+	Columns    []string `json:"columns"`
+	FileFormat Format   `json:"format"`
+	Sep        string   `json:"sep"`
 }
 
 type EntryPayload struct {
