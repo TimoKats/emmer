@@ -44,5 +44,5 @@ func (table *TablePayload) del() error {
 	if !table.exists() {
 		return errors.New("table '" + table.Name + "' doesn't exist")
 	}
-	return fs.Delete(table.path())
+	return fs.DeleteTable(table.path())
 }

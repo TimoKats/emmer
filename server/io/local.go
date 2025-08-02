@@ -102,12 +102,25 @@ func (io LocalIO) ReadJSON(path string) (map[string]any, error) {
 	return data, err
 }
 
-func (io LocalIO) WriteJSON(path string, key string, value any) error {
+func (io LocalIO) AddJSON(path string, key string, value any) error {
 	data, err := io.ReadJSON(path)
 	if err != nil {
 		return err
 	}
 	data[key] = value
+	bytes, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path, bytes, 0644)
+}
+
+func (io LocalIO) DelJSON(path string, key string) error {
+	data, err := io.ReadJSON(path)
+	if err != nil {
+		return err
+	}
+	delete(data, key)
 	bytes, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		return err
@@ -132,7 +145,7 @@ func (io LocalIO) GetFileByName(path string, fileName string) (string, error) {
 	return "", errors.New("file '" + fileName + "' not found")
 }
 
-func (io LocalIO) Delete(path string) error {
+func (io LocalIO) DeleteTable(path string) error {
 	return os.Remove(path)
 }
 

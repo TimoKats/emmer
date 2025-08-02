@@ -15,7 +15,6 @@ var fs io.IO
 
 func add(body []byte, path Path) error {
 	var err error
-
 	switch path {
 	case Table:
 		var table TablePayload
@@ -30,23 +29,25 @@ func add(body []byte, path Path) error {
 	default:
 		err = errors.New(fmt.Sprint(path) + ", unknown add option")
 	}
-
 	return err
 }
 
 func del(body []byte, path Path) error {
 	var err error
-
 	switch path {
 	case Table:
 		var table TablePayload
 		if err = json.Unmarshal(body, &table); err == nil {
 			err = table.del()
 		}
+	case Entry:
+		var entry EntryPayload
+		if err = json.Unmarshal(body, &entry); err == nil {
+			err = entry.del()
+		}
 	default:
 		err = errors.New(fmt.Sprint(path) + ", unknown add option")
 	}
-
 	return err
 }
 

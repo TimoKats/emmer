@@ -30,7 +30,7 @@ func AddHandler(path Path) http.Handler {
 			return
 		}
 		if err := add(body, path); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	})
@@ -43,7 +43,7 @@ func DelHandler(path Path) http.Handler {
 			return
 		}
 		if err := del(body, path); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	})
