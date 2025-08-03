@@ -1,6 +1,7 @@
 package server
 
 // enums
+
 type Format string
 type Operator string
 type Path int
