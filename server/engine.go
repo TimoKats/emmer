@@ -51,7 +51,13 @@ func del(body []byte, path Path) error {
 	return err
 }
 
-func query() error {
+func query(body []byte, path Path) error { // add page param?
+	var query QueryPayload
+	if err := json.Unmarshal(body, &query); err != nil {
+		return err
+	}
+
+	log.Println(query)
 	return nil
 }
 
@@ -64,8 +70,7 @@ func init() {
 		fs = io.LocalIO{Folder: "/home/timokats/.emmer/"}
 	}
 	if fs == nil {
-		log.Println("EMMER_FS '" + env + "' invalid")
-		os.Exit(1)
+		log.Fatal("EMMER_FS '" + env + "' invalid")
 	}
 	log.Println("selected " + fs.Info())
 }

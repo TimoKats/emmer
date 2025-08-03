@@ -48,3 +48,16 @@ func DelHandler(path Path) http.Handler {
 		}
 	})
 }
+
+func QueryHandler(path Path) http.Handler {
+	var body []byte
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if body = parsePost(w, r); body == nil {
+			return
+		}
+		if err := query(body, path); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	})
+}

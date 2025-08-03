@@ -21,6 +21,10 @@ func main() {
 	http.Handle("/api/table/del", server.DelHandler(server.Table))
 	http.Handle("/api/entry/del", server.DelHandler(server.Entry))
 
+	// query
+	http.Handle("/api/table/get", server.QueryHandler(server.Table))
+	http.Handle("/api/entry/get", server.QueryHandler(server.Entry))
+
 	// start the server
 	log.Println("server is running on http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
