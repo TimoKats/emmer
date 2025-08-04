@@ -3,17 +3,7 @@ package server
 // enums
 
 type Format string
-type Operator string
 type Path int
-
-const (
-	Equals  Operator = "equals"
-	Differs          = "differs"
-	Before           = "before"
-	After            = "after"
-	Above            = "above"
-	Below            = "below"
-)
 
 const (
 	Json Format = "json"
@@ -51,8 +41,8 @@ type EntryPayload struct {
 }
 
 type Filter struct {
-	Operator Operator `json:"op"`
-	Args     any      `json:"args"`
+	With    []string `json:"with"`
+	Without []string `json:"without"`
 }
 
 type QueryPayload struct {

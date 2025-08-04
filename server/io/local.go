@@ -36,6 +36,7 @@ func getCSVInfo(path string) (rune, int) {
 	if err != nil {
 		log.Println("when getting seperator: ", err)
 	}
+
 	maxCols := 0
 	separators := []rune{',', ';', '\t', '|'}
 	var bestSep rune = ',' // default
