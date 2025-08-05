@@ -7,7 +7,7 @@ type Path int
 
 const (
 	Json Format = "json"
-	Csv         = "csv"
+	Csv  Format = "csv"
 )
 
 const (
@@ -18,10 +18,12 @@ const (
 // structs
 
 type Response struct {
-	Message string `json:"message"`
-	Status  int    `json:"status"`
+	Message string `json:"message,omitempty"`
 
-	Result map[string]any // This will contain query results.
+	// for queries
+	Page          int            `json:"page"`
+	TabularResult [][]string     `json:"tableResult,omitempty"`
+	MapResult     map[string]any `json:"jsonResult,omitempty"`
 }
 
 type TablePayload struct {
@@ -47,5 +49,6 @@ type Filter struct {
 
 type QueryPayload struct {
 	Filters   map[string][]Filter `json:"filter"`
+	Key       string              `json:"key"` // for jsons
 	TableName string              `json:"table"`
 }

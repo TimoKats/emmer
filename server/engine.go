@@ -51,14 +51,12 @@ func del(body []byte, path Path) error {
 	return err
 }
 
-func query(body []byte, path Path) error { // add page param?
+func query(body []byte, path Path) (Response, error) { // add page param?
 	var query QueryPayload
 	if err := json.Unmarshal(body, &query); err != nil {
-		return err
+		return Response{}, err
 	}
-
-	log.Println(query)
-	return nil
+	return query.execute()
 }
 
 func init() {

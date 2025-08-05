@@ -17,4 +17,5 @@ type IO interface {
 	// csv
 	AppendCSV(path string, values []string) error
 	CreateCSV(path string, columns []string, sep string) error
+	ReadCSV(path string) ([][]string, error)
 }

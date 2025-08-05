@@ -66,6 +66,22 @@ func (io LocalIO) CreateCSV(path string, columns []string, sep string) error {
 	return w.WriteAll(data)
 }
 
+func (io LocalIO) ReadCSV(path string) ([][]string, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll()
+	if err != nil {
+		return nil, err
+	}
+
+	return records, nil
+}
+
 func (io LocalIO) AppendCSV(path string, values []string) error {
 	sep, cols := getCSVInfo(path)
 	if cols != len(values) {
@@ -88,6 +104,9 @@ func (io LocalIO) AppendCSV(path string, values []string) error {
 
 func (io LocalIO) CreateJSON(path string) error {
 	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
 	defer f.Close()
 	f.WriteString("{}")
 	return err

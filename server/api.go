@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 )
@@ -55,8 +56,14 @@ func QueryHandler(path Path) http.Handler {
 		if body = parsePost(w, r); body == nil {
 			return
 		}
-		if err := query(body, path); err != nil {
+		result, err := query(body, path)
+		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(result); err != nil {
+			http.Error(w, "failed to encode result", http.StatusInternalServerError)
 			return
 		}
 	})

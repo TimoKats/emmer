@@ -7,12 +7,12 @@ import (
 
 func (entry *EntryPayload) add() error {
 	path, err := fs.GetFileByName("data/", entry.TableName)
-
 	if err != nil {
 		return err
 	}
+
 	switch filepath.Ext(path) {
-	case ".csv":
+	case ".csv": // to enum ?
 		return fs.AppendCSV(path, entry.Values)
 	case ".json":
 		return fs.AddJSON(path, entry.Key, entry.Value)
