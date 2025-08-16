@@ -59,6 +59,27 @@ func query(body []byte, path Path) (Response, error) { // add page param?
 	return query.execute()
 }
 
+func (r Response) format() ([]byte, error) {
+	output := make(map[string]any)
+	output["message"] = r.Message
+	output["page"] = r.Page
+
+	// Add only one result field
+	if r.TabularResult != nil && r.MapResult != nil {
+		return nil, fmt.Errorf("both TabularResult and MapResult are set")
+	}
+
+	if r.TabularResult != nil {
+		output["result"] = r.TabularResult
+	} else if r.MapResult != nil {
+		output["result"] = r.MapResult
+	}
+
+	log.Println(output)
+
+	return json.Marshal(output)
+}
+
 func init() {
 	env := os.Getenv("EMMER_FS")
 	switch env {

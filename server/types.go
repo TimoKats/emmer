@@ -18,12 +18,12 @@ const (
 // structs
 
 type Response struct {
-	Message string `json:"message,omitempty"`
+	Message string
 
 	// for queries
-	Page          int            `json:"page"`
-	TabularResult [][]string     `json:"tableResult,omitempty"`
-	MapResult     map[string]any `json:"jsonResult,omitempty"`
+	Page          int
+	TabularResult [][]string
+	MapResult     map[string]any
 }
 
 type TablePayload struct {

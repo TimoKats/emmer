@@ -2,7 +2,6 @@ package server
 
 import (
 	"errors"
-	"log"
 	"path/filepath"
 )
 
@@ -12,13 +11,20 @@ func (query *QueryPayload) queryMap(data map[string]any) map[string]any {
 			query.Key: data[query.Key],
 		}
 		data = filteredData
+	} else { // return empty result
+		data = make(map[string]any)
 	}
-	log.Println(data)
 	return data
 }
 
 func (query *QueryPayload) queryTable(data [][]string) [][]string {
-	log.Println(data)
+	if len(data) == 0 {
+		return [][]string{}
+	}
+	// columns := data[0]
+	// for // IM HERE MAKING A MAPPING BETWEEN colindex and colname!
+	// data = data[:1]
+
 	return data
 }
 

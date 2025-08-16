@@ -1,7 +1,7 @@
 package server
 
 import (
-	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 )
@@ -21,7 +21,7 @@ func parsePost(w http.ResponseWriter, r *http.Request) []byte {
 }
 
 func PingHandler(w http.ResponseWriter, r *http.Request) {
-	return
+	fmt.Fprintln(w, "pong")
 }
 
 func AddHandler(path Path) http.Handler {
@@ -61,10 +61,12 @@ func QueryHandler(path Path) http.Handler {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(result); err != nil {
+		formattedResult, err := result.format()
+		if err != nil {
 			http.Error(w, "failed to encode result", http.StatusInternalServerError)
 			return
 		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(formattedResult)
 	})
 }
