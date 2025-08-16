@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -53,20 +54,18 @@ func DelHandler(path Path) http.Handler {
 func QueryHandler(path Path) http.Handler {
 	var body []byte
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
 		if body = parsePost(w, r); body == nil {
 			return
 		}
-		result, err := query(body, path)
+		response, err := query(body, path)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		formattedResult, err := result.format()
-		if err != nil {
-			http.Error(w, "failed to encode result", http.StatusInternalServerError)
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(formattedResult)
 	})
 }
