@@ -1,31 +1,34 @@
 package server
 
-// Applies query object to data (json) and returns the result.
-func (query *QueryPayload) apply(data map[string]any) map[string]any {
+import "errors"
+
+func (query *QueryPayload) apply(data map[string]any) (map[string]any, error) {
 	if len(query.Key) == 0 {
-		return data
+		return data, nil
 	}
-	if _, ok := data[query.Key]; ok {
-		filteredData := map[string]any{
-			query.Key: data[query.Key],
+	current := data
+	for _, step := range query.Key {
+		match, ok := current[step].(map[string]any)
+		if !ok {
+			return make(map[string]any), errors.New(step + " not found")
 		}
-		data = filteredData
-	} else { // return empty result if key not found
-		data = make(map[string]any)
+		current = match
 	}
-	return data
+	return current, nil
 }
 
 // Gets JSON table data, and applies the query.
 func (query *QueryPayload) execute() (Response, error) { // check this
-	var err error
-	var path string
 	var response Response
-	if path, err = fs.Fetch(query.TableName); err != nil {
+	// fetching table contents
+	path, err := fs.Fetch(query.TableName)
+	if err != nil {
 		return response, err
 	}
-	if data, err := fs.ReadJSON(path); err == nil {
-		response.Result = query.apply(data)
+	// filter contents on query
+	data, err := fs.ReadJSON(path)
+	if err == nil {
+		response.Result, err = query.apply(data)
 	}
 	return response, err
 }

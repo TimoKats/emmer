@@ -25,7 +25,7 @@ func insertNested(data map[string]any, keys []string, value any) error {
 }
 
 // Delete value on nested key (e.g. [1,2,3] > map[1][2][3])
-func deleteNested(data map[string]any, key []string) error {
+func deleteNested(data map[string]any, key []string) error { // NOTE: key/keys
 	keyFound := true
 	current := data
 	for index, step := range key {

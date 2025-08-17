@@ -22,12 +22,12 @@ func parsePost(w http.ResponseWriter, r *http.Request) []byte {
 	return body
 }
 
-// Ping handler, does nothing. Only used for health checks.
+// Does nothing. Only used for health checks.
 func PingHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "pong")
 }
 
-// Add handler, used for creating tables or adding key/values to table.
+// Used for creating tables or adding key/values to table.
 func AddHandler(path Path) http.Handler {
 	var body []byte
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +41,7 @@ func AddHandler(path Path) http.Handler {
 	})
 }
 
-// Del handler, used for removing tables or key/values from tables.
+// Used for removing tables or key/values from tables.
 func DelHandler(path Path) http.Handler {
 	var body []byte
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
