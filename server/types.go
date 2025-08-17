@@ -22,9 +22,9 @@ type TablePayload struct {
 }
 
 type EntryPayload struct {
-	TableName string `json:"table"`
-	Key       string `json:"key"`
-	Value     any    `json:"value"`
+	TableName string   `json:"table"`
+	Key       []string `json:"key"`
+	Value     any      `json:"value"`
 }
 
 type QueryPayload struct {

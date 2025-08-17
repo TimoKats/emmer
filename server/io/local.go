@@ -34,12 +34,18 @@ func (io LocalIO) ReadJSON(path string) (map[string]any, error) {
 }
 
 // Reads JSON file, updates key/value pair, writes to fs.
-func (io LocalIO) UpdateJSON(path string, key string, value any) error {
+func (io LocalIO) UpdateJSON(path string, key []string, value any) error {
+	// get json data
 	data, err := io.ReadJSON(path)
 	if err != nil {
 		return err
 	}
-	data[key] = value
+	// update json data
+	err = insertNested(data, key, value)
+	if err != nil {
+		return err
+	}
+	// write json data to file
 	bytes, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -48,12 +54,18 @@ func (io LocalIO) UpdateJSON(path string, key string, value any) error {
 }
 
 // Removes key from json file, writes to fs.
-func (io LocalIO) DeleteJson(path string, key string) error {
+func (io LocalIO) DeleteJson(path string, key []string) error {
+	// get json data
 	data, err := io.ReadJSON(path)
 	if err != nil {
 		return err
 	}
-	delete(data, key)
+	// update json data
+	err = deleteNested(data, key)
+	if err != nil {
+		return err
+	}
+	// write json data to file
 	bytes, err := json.Marshal(data)
 	if err != nil {
 		return err

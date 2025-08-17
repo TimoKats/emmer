@@ -12,6 +12,6 @@ type IO interface {
 
 	CreateJSON(path string) error
 	ReadJSON(path string) (map[string]any, error)
-	UpdateJSON(path string, key string, value any) error
-	DeleteJson(path string, key string) error
+	UpdateJSON(path string, key []string, value any) error
+	DeleteJson(path string, key []string) error
 }

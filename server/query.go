@@ -19,16 +19,13 @@ func (query *QueryPayload) apply(data map[string]any) map[string]any {
 // Gets JSON table data, and applies the query.
 func (query *QueryPayload) execute() (Response, error) { // check this
 	var err error
+	var path string
 	var response Response
-	path, err := fs.Fetch(query.TableName)
-	if err != nil {
+	if path, err = fs.Fetch(query.TableName); err != nil {
 		return response, err
 	}
-
-	data, err := fs.ReadJSON(path)
-	if err == nil {
+	if data, err := fs.ReadJSON(path); err == nil {
 		response.Result = query.apply(data)
 	}
-
 	return response, err
 }
