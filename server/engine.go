@@ -13,6 +13,7 @@ import (
 
 var fs io.IO
 
+// Adds table or entry to table based on API path.
 func add(body []byte, path Path) error {
 	var err error
 	switch path {
@@ -32,6 +33,7 @@ func add(body []byte, path Path) error {
 	return err
 }
 
+// Deletes table or entry to table based on API path.
 func del(body []byte, path Path) error {
 	var err error
 	switch path {
@@ -51,6 +53,7 @@ func del(body []byte, path Path) error {
 	return err
 }
 
+// Queries table based on request body (path for querying meta data).
 func query(body []byte, path Path) (Response, error) { // add page param?
 	var query QueryPayload
 	if err := json.Unmarshal(body, &query); err != nil {
@@ -59,6 +62,7 @@ func query(body []byte, path Path) (Response, error) { // add page param?
 	return query.execute()
 }
 
+// Upon init, selects which filesystem to use based on env variable.
 func init() {
 	env := os.Getenv("EMMER_FS")
 	switch env {

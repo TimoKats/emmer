@@ -1,5 +1,6 @@
 package server
 
+// Applies query object to data (json) and returns the result.
 func (query *QueryPayload) apply(data map[string]any) map[string]any {
 	if len(query.Key) == 0 {
 		return data
@@ -15,6 +16,7 @@ func (query *QueryPayload) apply(data map[string]any) map[string]any {
 	return data
 }
 
+// Gets JSON table data, and applies the query.
 func (query *QueryPayload) execute() (Response, error) { // check this
 	var err error
 	var response Response

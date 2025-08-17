@@ -6,14 +6,12 @@
 package server
 
 type IO interface {
-	// file level
 	Fetch(filename string) (string, error)
 	DeleteFile(filename string) error
 	Info() string
 
-	// data level
 	CreateJSON(path string) error
 	ReadJSON(path string) (map[string]any, error)
 	UpdateJSON(path string, key string, value any) error
-	DelJSON(path string, key string) error
+	DeleteJson(path string, key string) error
 }

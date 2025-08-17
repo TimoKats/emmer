@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+// Helper function to parse the body of a post request.
 func parsePost(w http.ResponseWriter, r *http.Request) []byte {
 	if r.Method != http.MethodPost {
 		http.Error(w, "wrong method", http.StatusMethodNotAllowed)
@@ -21,10 +22,12 @@ func parsePost(w http.ResponseWriter, r *http.Request) []byte {
 	return body
 }
 
+// Ping handler, does nothing. Only used for health checks.
 func PingHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "pong")
 }
 
+// Add handler, used for creating tables or adding key/values to table.
 func AddHandler(path Path) http.Handler {
 	var body []byte
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -38,6 +41,7 @@ func AddHandler(path Path) http.Handler {
 	})
 }
 
+// Del handler, used for removing tables or key/values from tables.
 func DelHandler(path Path) http.Handler {
 	var body []byte
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -51,6 +55,7 @@ func DelHandler(path Path) http.Handler {
 	})
 }
 
+// Query handler is used to filter/fetch data from jsons.
 func QueryHandler(path Path) http.Handler {
 	var body []byte
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
