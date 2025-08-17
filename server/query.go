@@ -2,6 +2,12 @@ package server
 
 import "errors"
 
+// Used to trim the body of the result using a template function.
+func (query *QueryPayload) format() error {
+	return nil
+}
+
+// Used to query on multi-keys. E.g. [1,2,3] returns map[1,2,3]
 func (query *QueryPayload) apply(data map[string]any) (map[string]any, error) {
 	if len(query.Key) == 0 {
 		return data, nil
