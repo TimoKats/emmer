@@ -8,6 +8,7 @@ package server
 type IO interface {
 	Fetch(filename string) (string, error)
 	DeleteFile(filename string) error
+	List() (map[string]any, error)
 	Info() string
 
 	CreateJSON(path string) error

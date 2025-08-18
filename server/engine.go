@@ -54,25 +54,28 @@ func del(body []byte, path Path) error {
 }
 
 // Queries table based on request body (path for querying meta data).
-func query(body []byte, path Path) (Response, error) { // add page param?
+func query(body []byte, path Path) (Response, error) {
 	var query QueryPayload
 	if err := json.Unmarshal(body, &query); err != nil {
 		return Response{}, err
 	}
-	return query.execute()
+	switch path {
+	case Table:
+		return query.table()
+	case Entry:
+		return query.entry()
+	default:
+		return Response{}, errors.New(fmt.Sprint(path) + ", unknown add option")
+	}
 }
 
 // Upon init, selects which filesystem to use based on env variable.
 func init() {
-	env := os.Getenv("EMMER_FS")
-	switch env {
-	case "aws":
-		log.Println("aws not implemented yet")
+	switch os.Getenv("EMMER_FS") {
+	// case "aws": < this will be the pattern
+	// 	log.Println("aws not implemented yet")
 	default:
 		fs = io.LocalIO{Folder: "data"}
-	}
-	if fs == nil {
-		log.Fatal("EMMER_FS '" + env + "' invalid")
 	}
 	log.Println("selected " + fs.Info())
 }

@@ -3,8 +3,11 @@ package server
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"log"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 type LocalIO struct {
@@ -91,4 +94,28 @@ func (io LocalIO) DeleteFile(filename string) error {
 // Basic info function. Used for logging.
 func (io LocalIO) Info() string {
 	return "local fs with root dir: " + io.Folder
+}
+
+func (io LocalIO) List() (map[string]any, error) {
+	// get all files in io folder
+	files, err := os.ReadDir(io.Folder)
+	result := make(map[string]any)
+	if err != nil {
+		return result, err
+	}
+	// iterate over json files
+	for _, f := range files {
+		if filepath.Ext(f.Name()) == ".json" {
+			info, err := f.Info()
+			if err != nil {
+				log.Printf("skipping %s due to read error", f.Name())
+				continue
+			}
+			result[f.Name()] = map[string]any{
+				"size":     fmt.Sprintf("%.2f KB", float64(info.Size())/1024),
+				"last mod": info.ModTime().Format(time.RFC822),
+			}
+		}
+	}
+	return result, nil
 }

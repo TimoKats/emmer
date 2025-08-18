@@ -13,7 +13,6 @@ const (
 
 type Response struct {
 	Message string         `json:"message"`
-	Page    int            `json:"page"`
 	Result  map[string]any `json:"result"`
 }
 
