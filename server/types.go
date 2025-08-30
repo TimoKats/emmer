@@ -1,16 +1,5 @@
 package server
 
-// enums
-
-type Path int
-
-const (
-	Table Path = iota
-	Entry
-)
-
-// structs
-
 type Response struct {
 	Message string         `json:"message"`
 	Result  map[string]any `json:"result"`
@@ -29,4 +18,10 @@ type EntryPayload struct {
 type QueryPayload struct {
 	Key       []string `json:"key"`
 	TableName string   `json:"table"`
+}
+
+type IData interface {
+	Add(payload []byte) error
+	Del(payload []byte) error
+	Query(payload []byte) error
 }

@@ -1,11 +1,18 @@
 package server
 
 import (
-	"encoding/json"
+	"errors"
+
+	. "github.com/TimoKats/emmer/server/fs"
+
 	"fmt"
 	"io"
+	"log"
 	"net/http"
+	"os"
 )
+
+var fs IFileSystem
 
 // Helper function to parse the body of a post request.
 func parsePost(w http.ResponseWriter, r *http.Request) []byte {
@@ -22,55 +29,67 @@ func parsePost(w http.ResponseWriter, r *http.Request) []byte {
 	return body
 }
 
+func parsePathValue(value string) (IData, error) {
+	switch value {
+	case "table":
+		return TableData{}, nil
+	case "entry":
+		return EntryData{}, nil
+	default:
+		return nil, errors.New("path " + value + " invalid")
+	}
+}
+
 // Does nothing. Only used for health checks.
 func PingHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "pong")
 }
 
 // Used for creating tables or adding key/values to table.
-func AddHandler(path Path) http.Handler {
-	var body []byte
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if body = parsePost(w, r); body == nil {
-			return
-		}
-		if err := add(body, path); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+func AddHandler(w http.ResponseWriter, r *http.Request) {
+	// parse request
+	body := parsePost(w, r)
+	if body == nil {
+		http.Error(w, "no body", http.StatusBadRequest)
+		return
+	}
+	// switch paths for add (are we adding table or entry?)
+	data, err := parsePathValue(r.PathValue("item"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+	}
+	// execute add on item
+	if err := data.Add(body); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
-// Used for removing tables or key/values from tables.
-func DelHandler(path Path) http.Handler {
-	var body []byte
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if body = parsePost(w, r); body == nil {
-			return
-		}
-		if err := del(body, path); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+// Used for creating tables or adding key/values to table.
+func DelHandler(w http.ResponseWriter, r *http.Request) {
+	// parse request
+	body := parsePost(w, r)
+	if body == nil {
+		http.Error(w, "no body", http.StatusBadRequest)
+		return
+	}
+	// switch paths for add (are we adding table or entry?)
+	data, err := parsePathValue(r.PathValue("item"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+	}
+	// execute del on item
+	if err := data.Del(body); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
-// Query handler is used to filter/fetch data from jsons.
-func QueryHandler(path Path) http.Handler {
-	var body []byte
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		if body = parsePost(w, r); body == nil {
-			return
-		}
-		response, err := query(body, path)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		if err := json.NewEncoder(w).Encode(response); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+// Upon init, selects which filesystem to use based on env variable.
+func init() {
+	switch os.Getenv("EMMER_FS") {
+	// case "aws": < this will be the pattern
+	// 	log.Println("aws not implemented yet")
+	default:
+		fs = LocalFS{Folder: "data"}
+	}
+	log.Println("selected " + fs.Info())
 }

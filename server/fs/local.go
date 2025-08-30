@@ -10,12 +10,17 @@ import (
 	"time"
 )
 
-type LocalIO struct {
+type LocalFS struct {
 	Folder string
 }
 
+func (io LocalFS) getPath(filename string) string {
+	return filepath.Join(io.Folder, filename) + ".json"
+}
+
 // creates empty JSON file at path
-func (io LocalIO) CreateJSON(path string) error {
+func (io LocalFS) CreateJSON(filename string) error {
+	path := io.getPath(filename)
 	f, err := os.Create(path)
 	if err != nil {
 		return err
@@ -26,7 +31,8 @@ func (io LocalIO) CreateJSON(path string) error {
 }
 
 // Reads JSON file into map[string]any variable
-func (io LocalIO) ReadJSON(path string) (map[string]any, error) {
+func (io LocalFS) ReadJSON(filename string) (map[string]any, error) {
+	path := io.getPath(filename)
 	var data map[string]any
 	file, err := os.ReadFile(path)
 	if err != nil {
@@ -37,9 +43,10 @@ func (io LocalIO) ReadJSON(path string) (map[string]any, error) {
 }
 
 // Reads JSON file, updates key/value pair, writes to fs.
-func (io LocalIO) UpdateJSON(path string, key []string, value any) error {
+func (io LocalFS) UpdateJSON(filename string, key []string, value any) error {
 	// get json data
-	data, err := io.ReadJSON(path)
+	path := io.getPath(filename)
+	data, err := io.ReadJSON(filename)
 	if err != nil {
 		return err
 	}
@@ -57,9 +64,10 @@ func (io LocalIO) UpdateJSON(path string, key []string, value any) error {
 }
 
 // Removes key from json file, writes to fs.
-func (io LocalIO) DeleteJson(path string, key []string) error {
+func (io LocalFS) DeleteJson(filename string, key []string) error {
 	// get json data
-	data, err := io.ReadJSON(path)
+	path := io.getPath(filename)
+	data, err := io.ReadJSON(filename)
 	if err != nil {
 		return err
 	}
@@ -77,8 +85,8 @@ func (io LocalIO) DeleteJson(path string, key []string) error {
 }
 
 // Gets path based on table/file name. Returns error if not found.
-func (io LocalIO) Fetch(filename string) (string, error) {
-	path := filepath.Join(io.Folder, filename) + ".json"
+func (io LocalFS) Fetch(filename string) (string, error) {
+	path := io.getPath(filename)
 	if _, err := os.Stat(path); err != nil {
 		return path, errors.New("table not found")
 	}
@@ -86,17 +94,17 @@ func (io LocalIO) Fetch(filename string) (string, error) {
 }
 
 // Removes entire JSON file.
-func (io LocalIO) DeleteFile(filename string) error {
-	path := filepath.Join(io.Folder, filename)
+func (io LocalFS) DeleteFile(filename string) error {
+	path := io.getPath(filename)
 	return os.Remove(path)
 }
 
 // Basic info function. Used for logging.
-func (io LocalIO) Info() string {
+func (io LocalFS) Info() string {
 	return "local fs with root dir: " + io.Folder
 }
 
-func (io LocalIO) List() (map[string]any, error) {
+func (io LocalFS) List() (map[string]any, error) {
 	// get all files in io folder
 	files, err := os.ReadDir(io.Folder)
 	result := make(map[string]any)

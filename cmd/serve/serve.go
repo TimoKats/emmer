@@ -11,19 +11,12 @@ func main() {
 	// basics
 	fs := http.FileServer(http.Dir("web/static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
+
+	// api
 	http.HandleFunc("/api/ping", server.PingHandler)
-
-	// adding
-	http.Handle("/api/table/add", server.AddHandler(server.Table))
-	http.Handle("/api/entry/add", server.AddHandler(server.Entry))
-
-	// deleting
-	http.Handle("/api/table/del", server.DelHandler(server.Table))
-	http.Handle("/api/entry/del", server.DelHandler(server.Entry))
-
-	// query
-	http.Handle("/api/table/query", server.QueryHandler(server.Table))
-	http.Handle("/api/entry/query", server.QueryHandler(server.Entry))
+	http.HandleFunc("/api/{item}/add", server.AddHandler)
+	http.HandleFunc("/api/{item}/del", server.DelHandler)
+	http.HandleFunc("/api/{item}/query", server.PingHandler)
 
 	// start the server
 	log.Println("server is running on http://localhost:8080")

@@ -5,14 +5,14 @@
 
 package server
 
-type IO interface {
+type IFileSystem interface {
 	Fetch(filename string) (string, error)
 	DeleteFile(filename string) error
 	List() (map[string]any, error)
 	Info() string
 
-	CreateJSON(path string) error
-	ReadJSON(path string) (map[string]any, error)
-	UpdateJSON(path string, key []string, value any) error
-	DeleteJson(path string, key []string) error
+	CreateJSON(filename string) error
+	ReadJSON(filename string) (map[string]any, error)
+	UpdateJSON(filename string, key []string, value any) error
+	DeleteJson(filename string, key []string) error
 }

@@ -1,32 +1,29 @@
 package server
 
 import (
-	"errors"
+	"encoding/json"
 )
 
-// Return true if table exists in filesystem.
-func (table *TablePayload) exists() bool {
-	filePath, err := fs.Fetch(table.Name)
-	return err == nil && len(filePath) != 0
+type TableData struct{}
+
+// Calles by engine. Check if table exists, if yes, remove table.
+func (TableData) Del(payload []byte) error {
+	var table TablePayload
+	if err := json.Unmarshal(payload, &table); err != nil {
+		return err
+	}
+	return fs.DeleteFile(table.Name)
 }
 
-// Creates empty JSON with table name.
-func (table *TablePayload) create() error {
+// parses payload of table, and creates it if it doesn't exist.
+func (TableData) Add(payload []byte) error {
+	var table TablePayload
+	if err := json.Unmarshal(payload, &table); err != nil {
+		return err
+	}
 	return fs.CreateJSON(table.Name)
 }
 
-// Called by engine. Check if table exists, if not, create table.
-func (table *TablePayload) add() error {
-	if table.exists() {
-		return errors.New("table '" + table.Name + "' already exists")
-	}
-	return table.create()
-}
-
-// Calles by engine. Check if table exists, if yes, remove table.
-func (table *TablePayload) del() error {
-	if !table.exists() {
-		return errors.New("table '" + table.Name + "' doesn't exist")
-	}
-	return fs.DeleteFile(table.Name)
+func (TableData) Query(payload []byte) error {
+	return nil
 }
