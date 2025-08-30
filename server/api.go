@@ -15,19 +15,19 @@ import (
 
 var fs IFileSystem
 
-// helper function to parse the body of a post request.
+// helper function to parse the payload of a post request.
 func parsePost(w http.ResponseWriter, r *http.Request) []byte {
 	if r.Method != http.MethodPost {
 		http.Error(w, "wrong method", http.StatusMethodNotAllowed)
 		return nil
 	}
-	body, err := io.ReadAll(r.Body)
+	payload, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return nil
 	}
-	return body
+	return payload
 }
 
 // this function selects the interface based on the URL path.
@@ -50,9 +50,9 @@ func PingHandler(w http.ResponseWriter, r *http.Request) {
 // used for creating tables or adding key/values to table.
 func AddHandler(w http.ResponseWriter, r *http.Request) {
 	// parse request
-	body := parsePost(w, r)
-	if body == nil {
-		http.Error(w, "no body", http.StatusBadRequest)
+	payload := parsePost(w, r)
+	if payload == nil {
+		http.Error(w, "no payload", http.StatusBadRequest)
 		return
 	}
 	// switch paths for add (are we adding table or entry?)
@@ -61,7 +61,7 @@ func AddHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotFound)
 	}
 	// execute add on item
-	if err := data.Add(body); err != nil {
+	if err := data.Add(payload); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -69,9 +69,9 @@ func AddHandler(w http.ResponseWriter, r *http.Request) {
 // used for creating tables or adding key/values to table.
 func DelHandler(w http.ResponseWriter, r *http.Request) {
 	// parse request
-	body := parsePost(w, r)
-	if body == nil {
-		http.Error(w, "no body", http.StatusBadRequest)
+	payload := parsePost(w, r)
+	if payload == nil {
+		http.Error(w, "no payload", http.StatusBadRequest)
 		return
 	}
 	// switch paths for add (are we adding table or entry?)
@@ -80,7 +80,7 @@ func DelHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotFound)
 	}
 	// execute del on item
-	if err := data.Del(body); err != nil {
+	if err := data.Del(payload); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -89,9 +89,9 @@ func DelHandler(w http.ResponseWriter, r *http.Request) {
 func QueryHandler(w http.ResponseWriter, r *http.Request) {
 	// parse request
 	w.Header().Set("Content-Type", "application/json")
-	body := parsePost(w, r)
-	if body == nil {
-		http.Error(w, "no body", http.StatusBadRequest)
+	payload := parsePost(w, r)
+	if payload == nil {
+		http.Error(w, "no payload", http.StatusBadRequest)
 		return
 	}
 	// switch paths for add (are we adding table or entry?)
@@ -100,7 +100,7 @@ func QueryHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotFound)
 	}
 	// execute and return query
-	response, err := data.Query(body)
+	response, err := data.Query(payload)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
