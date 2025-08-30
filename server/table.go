@@ -6,7 +6,7 @@ import (
 
 type TableData struct{}
 
-// Calles by engine. Check if table exists, if yes, remove table.
+// check if table exists, if yes, remove table.
 func (TableData) Del(payload []byte) error {
 	var table TablePayload
 	if err := json.Unmarshal(payload, &table); err != nil {
@@ -24,6 +24,27 @@ func (TableData) Add(payload []byte) error {
 	return fs.CreateJSON(table.Name)
 }
 
-func (TableData) Query(payload []byte) error {
-	return nil
+// queries tables (so not table contents)
+func (TableData) Query(payload []byte) (Response, error) {
+	// parse query payload into object
+	var response Response
+	var query QueryPayload
+	response.Result = make(map[string]any)
+	if err := json.Unmarshal(payload, &query); err != nil {
+		return Response{}, err
+	}
+	// fetch store contents
+	files, err := fs.List()
+	if err != nil {
+		return response, err
+	}
+	// iterate over json files (have to do type assertion because it's any)
+	if result, ok := response.Result.(map[string]any); ok {
+		for filename, contents := range files {
+			if len(query.TableName) == 0 || query.TableName+".json" == filename {
+				result[filename] = contents
+			}
+		}
+	}
+	return response, nil
 }

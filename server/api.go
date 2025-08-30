@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"errors"
 
 	. "github.com/TimoKats/emmer/server/fs"
@@ -14,7 +15,7 @@ import (
 
 var fs IFileSystem
 
-// Helper function to parse the body of a post request.
+// helper function to parse the body of a post request.
 func parsePost(w http.ResponseWriter, r *http.Request) []byte {
 	if r.Method != http.MethodPost {
 		http.Error(w, "wrong method", http.StatusMethodNotAllowed)
@@ -29,6 +30,7 @@ func parsePost(w http.ResponseWriter, r *http.Request) []byte {
 	return body
 }
 
+// this function selects the interface based on the URL path.
 func parsePathValue(value string) (IData, error) {
 	switch value {
 	case "table":
@@ -40,12 +42,12 @@ func parsePathValue(value string) (IData, error) {
 	}
 }
 
-// Does nothing. Only used for health checks.
+// does nothing. Only used for health checks.
 func PingHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "pong")
 }
 
-// Used for creating tables or adding key/values to table.
+// used for creating tables or adding key/values to table.
 func AddHandler(w http.ResponseWriter, r *http.Request) {
 	// parse request
 	body := parsePost(w, r)
@@ -64,7 +66,7 @@ func AddHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Used for creating tables or adding key/values to table.
+// used for creating tables or adding key/values to table.
 func DelHandler(w http.ResponseWriter, r *http.Request) {
 	// parse request
 	body := parsePost(w, r)
@@ -83,7 +85,33 @@ func DelHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Upon init, selects which filesystem to use based on env variable.
+// used for querying tables or adding key/values to table.
+func QueryHandler(w http.ResponseWriter, r *http.Request) {
+	// parse request
+	w.Header().Set("Content-Type", "application/json")
+	body := parsePost(w, r)
+	if body == nil {
+		http.Error(w, "no body", http.StatusBadRequest)
+		return
+	}
+	// switch paths for add (are we adding table or entry?)
+	data, err := parsePathValue(r.PathValue("item"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+	}
+	// execute and return query
+	response, err := data.Query(body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+// upon init, selects which filesystem to use based on env variable.
 func init() {
 	switch os.Getenv("EMMER_FS") {
 	// case "aws": < this will be the pattern
