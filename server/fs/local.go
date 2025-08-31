@@ -133,12 +133,20 @@ func (io LocalFS) Info() string {
 // creates new localFS instance with settings applied
 func SetupLocal() *LocalFS {
 	folder := os.Getenv("EM_FOLDER")
+	// default value is ~/.emmer
 	if folder == "" {
 		dirname, err := os.UserHomeDir()
 		if err != nil {
 			log.Panic("can't setup emmer folder")
 		}
 		folder = dirname + "/.emmer"
+	}
+	// create selected folder if it doesn't exist
+	if _, err := os.Stat(folder); os.IsNotExist(err) {
+		log.Printf("created folder: %s", folder)
+		if err := os.Mkdir(folder, 0755); err != nil {
+			log.Panic("can't setup emmer folder")
+		}
 	}
 	return &LocalFS{
 		Folder: folder,
