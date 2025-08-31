@@ -1,14 +1,26 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 
 	server "github.com/TimoKats/emmer/server"
 )
 
+type flags struct {
+	port string
+}
+
+func getFlags() flags {
+	port := flag.String("p", "8080", "Port.")
+	flag.Parse()
+	return flags{port: ":" + *port}
+}
+
 func main() {
 	// basics
+	flags := getFlags()
 	fs := http.FileServer(http.Dir("web/static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
@@ -19,6 +31,6 @@ func main() {
 	http.HandleFunc("/api/{item}/query", server.QueryHandler)
 
 	// start the server
-	log.Println("server is running on http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Println("server is running on http://localhost" + flags.port)
+	log.Fatal(http.ListenAndServe(flags.port, nil))
 }

@@ -44,7 +44,7 @@ func (io LocalFS) ReadJSON(filename string) (map[string]any, error) {
 }
 
 // reads JSON file, updates key/value pair, writes to fs
-func (io LocalFS) UpdateJSON(filename string, key []string, value any) error {
+func (io LocalFS) UpdateJSON(filename string, key []string, value any, mode string) error {
 	// get json data
 	path := io.getPath(filename)
 	data, err := io.ReadJSON(filename)
@@ -52,7 +52,7 @@ func (io LocalFS) UpdateJSON(filename string, key []string, value any) error {
 		return err
 	}
 	// update json data
-	err = insertNested(data, key, value)
+	err = insertNested(data, key, value, mode)
 	if err != nil {
 		return err
 	}

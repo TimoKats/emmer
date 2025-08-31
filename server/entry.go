@@ -55,7 +55,7 @@ func (EntryItem) Add(payload []byte) error {
 	if _, err := fs.Fetch(entry.TableName); err != nil {
 		return err
 	}
-	return fs.UpdateJSON(entry.TableName, entry.Key, entry.Value)
+	return fs.UpdateJSON(entry.TableName, entry.Key, entry.Value, entry.Mode)
 }
 
 // query for an entry in a table. Returns query result.
