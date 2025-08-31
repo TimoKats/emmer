@@ -26,9 +26,9 @@ func main() {
 
 	// api
 	http.HandleFunc("/api/ping", server.PingHandler)
-	http.HandleFunc("/api/{item}/add", server.AddHandler)
-	http.HandleFunc("/api/{item}/del", server.DelHandler)
-	http.HandleFunc("/api/{item}/query", server.QueryHandler)
+	http.HandleFunc("/api/{item}/add", server.Auth(server.AddHandler))
+	http.HandleFunc("/api/{item}/del", server.Auth(server.DelHandler))
+	http.HandleFunc("/api/{item}/query", server.Auth(server.QueryHandler))
 
 	// start the server
 	log.Println("server is running on http://localhost" + flags.port)
