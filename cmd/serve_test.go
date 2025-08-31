@@ -29,7 +29,8 @@ func TestApi(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Failed to send request to %s: %v", test.endpoint, err)
 		}
-		defer resp.Body.Close()
+		defer resp.Body.Close() //nolint:errcheck
+
 		respBody, err := io.ReadAll(resp.Body)
 		if err != nil {
 			t.Fatalf("Failed to read response body: %v", err)

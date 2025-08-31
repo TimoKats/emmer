@@ -22,7 +22,7 @@ func parsePost(w http.ResponseWriter, r *http.Request) []byte {
 		return nil
 	}
 	payload, err := io.ReadAll(r.Body)
-	defer r.Body.Close()
+	defer r.Body.Close() //nolint:errcheck
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return nil
@@ -44,7 +44,10 @@ func parsePathValue(value string) (Item, error) {
 
 // does nothing. Only used for health checks.
 func PingHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "pong")
+	_, err := fmt.Fprintln(w, "pong")
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 // used for creating tables or adding key/values to table.
