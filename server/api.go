@@ -48,10 +48,7 @@ func parsePathValue(value string) (Item, error) {
 
 // does nothing. Only used for health checks
 func PingHandler(w http.ResponseWriter, r *http.Request) {
-	_, err := fmt.Fprintln(w, "pong")
-	if err != nil {
-		log.Println(err)
-	}
+	fmt.Fprintln(w, "pong") //nolint:errcheck
 }
 
 // used for creating tables or adding key/values to table
