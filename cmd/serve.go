@@ -7,7 +7,7 @@ import (
 	server "github.com/TimoKats/emmer/server"
 )
 
-func main() {
+func serve() {
 	// basics
 	fs := http.FileServer(http.Dir("web/static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
@@ -21,4 +21,9 @@ func main() {
 	// start the server
 	log.Println("server is running on http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+func main() {
+	log.Println("starting server...")
+	serve()
 }

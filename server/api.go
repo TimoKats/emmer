@@ -117,7 +117,7 @@ func init() {
 	// case "aws": < this will be the pattern
 	// 	log.Println("aws not implemented yet")
 	default:
-		fs = LocalFS{Folder: "data"}
+		fs = LocalFS{Folder: "/home/timokats/.emmer/"}
 	}
 	log.Println("selected " + fs.Info())
 }

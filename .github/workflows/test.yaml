@@ -1,0 +1,37 @@
+name: Test
+
+on:
+  pull_request:
+      types: [opened, reopened, synchronize]
+      branches:
+          - main
+
+jobs:
+  linter:
+    name: linter check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: ['1.20', '1.22', '1.24']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.58
+  test:
+    name: unit tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: ['1.20', '1.22', '1.24']
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go }}
+      - name: smoke tests
+        run: go test ./cmd/...
