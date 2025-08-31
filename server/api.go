@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	. "github.com/TimoKats/emmer/server/fs"
+	emmerFs "github.com/TimoKats/emmer/server/fs"
 
 	"fmt"
 	"io"
@@ -13,7 +13,7 @@ import (
 	"os"
 )
 
-var fs FileSystem
+var fs emmerFs.FileSystem
 
 // helper function to parse the payload of a post request.
 func parsePost(w http.ResponseWriter, r *http.Request) []byte {
@@ -113,11 +113,11 @@ func QueryHandler(w http.ResponseWriter, r *http.Request) {
 
 // upon init, selects which filesystem to use based on env variable.
 func init() {
-	switch os.Getenv("EMMER_FS") {
+	switch os.Getenv("EM_FILESYSTEM") {
 	// case "aws": < this will be the pattern
 	// 	log.Println("aws not implemented yet")
 	default:
-		fs = LocalFS{Folder: "/home/timokats/.emmer/"}
+		fs = emmerFs.SetupLocal()
 	}
 	log.Println("selected " + fs.Info())
 }

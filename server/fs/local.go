@@ -14,6 +14,7 @@ type LocalFS struct {
 	Folder string
 }
 
+// takes filename and returns full path + extension to json file
 func (io LocalFS) getPath(filename string) string {
 	return filepath.Join(io.Folder, filename) + ".json"
 }
@@ -42,7 +43,7 @@ func (io LocalFS) ReadJSON(filename string) (map[string]any, error) {
 	return data, err
 }
 
-// reads JSON file, updates key/value pair, writes to fs.
+// reads JSON file, updates key/value pair, writes to fs
 func (io LocalFS) UpdateJSON(filename string, key []string, value any) error {
 	// get json data
 	path := io.getPath(filename)
@@ -63,7 +64,7 @@ func (io LocalFS) UpdateJSON(filename string, key []string, value any) error {
 	return os.WriteFile(path, bytes, 0644)
 }
 
-// removes key from json file, writes to fs.
+// removes key from json file, writes to fs
 func (io LocalFS) DeleteJson(filename string, key []string) error {
 	// get json data
 	path := io.getPath(filename)
@@ -84,7 +85,7 @@ func (io LocalFS) DeleteJson(filename string, key []string) error {
 	return os.WriteFile(path, bytes, 0644)
 }
 
-// gets path based on table/file name. Returns error if not found.
+// gets path based on table/file name. Returns error if not found
 func (io LocalFS) Fetch(filename string) (string, error) {
 	path := io.getPath(filename)
 	if _, err := os.Stat(path); err != nil {
@@ -93,15 +94,10 @@ func (io LocalFS) Fetch(filename string) (string, error) {
 	return path, nil
 }
 
-// removes entire JSON file.
+// removes entire JSON file
 func (io LocalFS) DeleteFile(filename string) error {
 	path := io.getPath(filename)
 	return os.Remove(path)
-}
-
-// basic info function. Used for logging.
-func (io LocalFS) Info() string {
-	return "local fs with root dir: " + io.Folder
 }
 
 // list json files in io folder, along with some statistics
@@ -127,4 +123,24 @@ func (io LocalFS) List() (map[string]any, error) {
 		}
 	}
 	return result, nil
+}
+
+// basic info function. Used for logging
+func (io LocalFS) Info() string {
+	return "local fs with root dir: " + io.Folder
+}
+
+// creates new localFS instance with settings applied
+func SetupLocal() *LocalFS {
+	folder := os.Getenv("EM_FOLDER")
+	if folder == "" {
+		dirname, err := os.UserHomeDir()
+		if err != nil {
+			log.Panic("can't setup emmer folder")
+		}
+		folder = dirname + "/.emmer"
+	}
+	return &LocalFS{
+		Folder: folder,
+	}
 }
