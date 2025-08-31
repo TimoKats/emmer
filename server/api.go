@@ -15,7 +15,7 @@ import (
 
 var fs emmerFs.FileSystem
 
-// helper function to parse the payload of a post request.
+// helper function to parse the payload of a post request
 func parsePost(w http.ResponseWriter, r *http.Request) []byte {
 	if r.Method != http.MethodPost {
 		http.Error(w, "wrong method", http.StatusMethodNotAllowed)
@@ -30,7 +30,7 @@ func parsePost(w http.ResponseWriter, r *http.Request) []byte {
 	return payload
 }
 
-// this function selects the interface based on the URL path.
+// this function selects the interface based on the URL path
 func parsePathValue(value string) (Item, error) {
 	switch value {
 	case "table":
@@ -42,7 +42,7 @@ func parsePathValue(value string) (Item, error) {
 	}
 }
 
-// does nothing. Only used for health checks.
+// does nothing. Only used for health checks
 func PingHandler(w http.ResponseWriter, r *http.Request) {
 	_, err := fmt.Fprintln(w, "pong")
 	if err != nil {
@@ -50,7 +50,7 @@ func PingHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// used for creating tables or adding key/values to table.
+// used for creating tables or adding key/values to table
 func AddHandler(w http.ResponseWriter, r *http.Request) {
 	// parse request
 	payload := parsePost(w, r)
@@ -88,7 +88,7 @@ func DelHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// used for querying tables or adding key/values to table.
+// used for querying tables or adding key/values to table
 func QueryHandler(w http.ResponseWriter, r *http.Request) {
 	// parse request
 	w.Header().Set("Content-Type", "application/json")
@@ -114,7 +114,7 @@ func QueryHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// upon init, selects which filesystem to use based on env variable.
+// upon init, selects which filesystem to use based on env variable
 func init() {
 	switch os.Getenv("EM_FILESYSTEM") {
 	// case "aws": < this will be the pattern

@@ -7,7 +7,7 @@ import (
 
 type EntryItem struct{}
 
-// used to query on multi-keys. E.g. [1,2,3] returns map[1,2,3]
+// used to query on multi-keys. E.g. [1,2,3] returns map[1,2,3] > value
 func (query *QueryPayload) filterEntry(data map[string]any) (any, error) {
 	if len(query.Key) == 0 {
 		return data, nil

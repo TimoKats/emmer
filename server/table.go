@@ -22,6 +22,10 @@ func (TableItem) Add(payload []byte) error {
 	if err := json.Unmarshal(payload, &table); err != nil {
 		return err
 	}
+	// check payload validity
+	if table.Name == "" {
+		return errors.New("no table name provided")
+	}
 	// fetching table contents
 	if _, err := fs.Fetch(table.Name); err == nil {
 		return errors.New("table " + table.Name + " already exists")
