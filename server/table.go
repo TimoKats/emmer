@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 )
 
 type TableData struct{}
@@ -20,6 +21,10 @@ func (TableData) Add(payload []byte) error {
 	var table TablePayload
 	if err := json.Unmarshal(payload, &table); err != nil {
 		return err
+	}
+	// fetching table contents
+	if _, err := fs.Fetch(table.Name); err == nil {
+		return errors.New("table " + table.Name + " already exists")
 	}
 	return fs.CreateJSON(table.Name)
 }
