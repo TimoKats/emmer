@@ -5,7 +5,7 @@
 
 package server
 
-type IFileSystem interface {
+type FileSystem interface {
 	Fetch(filename string) (string, error)
 	DeleteFile(filename string) error
 	List() (map[string]any, error)

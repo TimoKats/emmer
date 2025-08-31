@@ -30,7 +30,7 @@ func (io LocalFS) CreateJSON(filename string) error {
 	return err
 }
 
-// Reads JSON file into map[string]any variable
+// reads JSON file into map[string]any variable
 func (io LocalFS) ReadJSON(filename string) (map[string]any, error) {
 	path := io.getPath(filename)
 	var data map[string]any
@@ -42,7 +42,7 @@ func (io LocalFS) ReadJSON(filename string) (map[string]any, error) {
 	return data, err
 }
 
-// Reads JSON file, updates key/value pair, writes to fs.
+// reads JSON file, updates key/value pair, writes to fs.
 func (io LocalFS) UpdateJSON(filename string, key []string, value any) error {
 	// get json data
 	path := io.getPath(filename)
@@ -63,7 +63,7 @@ func (io LocalFS) UpdateJSON(filename string, key []string, value any) error {
 	return os.WriteFile(path, bytes, 0644)
 }
 
-// Removes key from json file, writes to fs.
+// removes key from json file, writes to fs.
 func (io LocalFS) DeleteJson(filename string, key []string) error {
 	// get json data
 	path := io.getPath(filename)
@@ -84,26 +84,27 @@ func (io LocalFS) DeleteJson(filename string, key []string) error {
 	return os.WriteFile(path, bytes, 0644)
 }
 
-// Gets path based on table/file name. Returns error if not found.
+// gets path based on table/file name. Returns error if not found.
 func (io LocalFS) Fetch(filename string) (string, error) {
 	path := io.getPath(filename)
 	if _, err := os.Stat(path); err != nil {
-		return path, errors.New("table not found")
+		return path, errors.New("table " + filename + " not found")
 	}
 	return path, nil
 }
 
-// Removes entire JSON file.
+// removes entire JSON file.
 func (io LocalFS) DeleteFile(filename string) error {
 	path := io.getPath(filename)
 	return os.Remove(path)
 }
 
-// Basic info function. Used for logging.
+// basic info function. Used for logging.
 func (io LocalFS) Info() string {
 	return "local fs with root dir: " + io.Folder
 }
 
+// list json files in io folder, along with some statistics
 func (io LocalFS) List() (map[string]any, error) {
 	// get all files in io folder
 	files, err := os.ReadDir(io.Folder)

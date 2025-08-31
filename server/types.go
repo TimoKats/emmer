@@ -20,7 +20,7 @@ type QueryPayload struct {
 	TableName string   `json:"table"`
 }
 
-type IData interface {
+type Item interface {
 	Add(payload []byte) error
 	Del(payload []byte) error
 	Query(payload []byte) (Response, error)

@@ -4,7 +4,7 @@ import (
 	"errors"
 )
 
-// Add value on nested key (e.g. [1,2,3] > map[1][2][3] = value)
+// add value on nested key (e.g. [1,2,3] > map[1][2][3] = value)
 func insertNested(data map[string]any, keys []string, value any) error {
 	current := data
 	for i, key := range keys {
@@ -24,7 +24,7 @@ func insertNested(data map[string]any, keys []string, value any) error {
 	return nil
 }
 
-// Delete value on nested key (e.g. [1,2,3] > map[1][2][3])
+// delete value on nested key (e.g. [1,2,3] > map[1][2][3])
 func deleteNested(data map[string]any, key []string) error { // NOTE: key/keys
 	keyFound := true
 	current := data

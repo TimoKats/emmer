@@ -5,7 +5,7 @@ import (
 	"errors"
 )
 
-type EntryData struct{}
+type EntryItem struct{}
 
 // used to query on multi-keys. E.g. [1,2,3] returns map[1,2,3]
 func (query *QueryPayload) filterEntry(data map[string]any) (any, error) {
@@ -28,7 +28,7 @@ func (query *QueryPayload) filterEntry(data map[string]any) (any, error) {
 }
 
 // fetches path for table name, then removes key from JSON.
-func (EntryData) Del(payload []byte) error {
+func (EntryItem) Del(payload []byte) error {
 	var entry EntryPayload
 	if err := json.Unmarshal(payload, &entry); err != nil {
 		return err
@@ -44,7 +44,7 @@ func (EntryData) Del(payload []byte) error {
 }
 
 // parses entry payload and updates the corresponding table
-func (EntryData) Add(payload []byte) error {
+func (EntryItem) Add(payload []byte) error {
 	var entry EntryPayload
 	if err := json.Unmarshal(payload, &entry); err != nil {
 		return err
@@ -59,7 +59,7 @@ func (EntryData) Add(payload []byte) error {
 }
 
 // query for an entry in a table. Returns query result.
-func (EntryData) Query(payload []byte) (Response, error) {
+func (EntryItem) Query(payload []byte) (Response, error) {
 	var response Response
 	var query QueryPayload
 	if err := json.Unmarshal(payload, &query); err != nil {

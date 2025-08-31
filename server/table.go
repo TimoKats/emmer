@@ -5,10 +5,10 @@ import (
 	"errors"
 )
 
-type TableData struct{}
+type TableItem struct{}
 
 // check if table exists, if yes, remove table.
-func (TableData) Del(payload []byte) error {
+func (TableItem) Del(payload []byte) error {
 	var table TablePayload
 	if err := json.Unmarshal(payload, &table); err != nil {
 		return err
@@ -17,7 +17,7 @@ func (TableData) Del(payload []byte) error {
 }
 
 // parses payload of table, and creates it if it doesn't exist.
-func (TableData) Add(payload []byte) error {
+func (TableItem) Add(payload []byte) error {
 	var table TablePayload
 	if err := json.Unmarshal(payload, &table); err != nil {
 		return err
@@ -30,7 +30,7 @@ func (TableData) Add(payload []byte) error {
 }
 
 // queries tables (so not table contents)
-func (TableData) Query(payload []byte) (Response, error) {
+func (TableItem) Query(payload []byte) (Response, error) {
 	// parse query payload into object
 	var response Response
 	var query QueryPayload

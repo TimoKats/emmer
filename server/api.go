@@ -13,7 +13,7 @@ import (
 	"os"
 )
 
-var fs IFileSystem
+var fs FileSystem
 
 // helper function to parse the payload of a post request.
 func parsePost(w http.ResponseWriter, r *http.Request) []byte {
@@ -31,12 +31,12 @@ func parsePost(w http.ResponseWriter, r *http.Request) []byte {
 }
 
 // this function selects the interface based on the URL path.
-func parsePathValue(value string) (IData, error) {
+func parsePathValue(value string) (Item, error) {
 	switch value {
 	case "table":
-		return TableData{}, nil
+		return TableItem{}, nil
 	case "entry":
-		return EntryData{}, nil
+		return EntryItem{}, nil
 	default:
 		return nil, errors.New("path " + value + " invalid")
 	}
