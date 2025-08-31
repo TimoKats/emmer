@@ -1,6 +1,8 @@
 package server
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 
@@ -14,8 +16,10 @@ import (
 )
 
 var fs emmerFs.FileSystem
+var username string
+var password string
 
-// helper function to parse the payload of a post request.
+// helper function to parse the payload of a post request
 func parsePost(w http.ResponseWriter, r *http.Request) []byte {
 	if r.Method != http.MethodPost {
 		http.Error(w, "wrong method", http.StatusMethodNotAllowed)
@@ -30,7 +34,7 @@ func parsePost(w http.ResponseWriter, r *http.Request) []byte {
 	return payload
 }
 
-// this function selects the interface based on the URL path.
+// this function selects the interface based on the URL path
 func parsePathValue(value string) (Item, error) {
 	switch value {
 	case "table":
@@ -42,7 +46,7 @@ func parsePathValue(value string) (Item, error) {
 	}
 }
 
-// does nothing. Only used for health checks.
+// does nothing. Only used for health checks
 func PingHandler(w http.ResponseWriter, r *http.Request) {
 	_, err := fmt.Fprintln(w, "pong")
 	if err != nil {
@@ -50,7 +54,7 @@ func PingHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// used for creating tables or adding key/values to table.
+// used for creating tables or adding key/values to table
 func AddHandler(w http.ResponseWriter, r *http.Request) {
 	// parse request
 	payload := parsePost(w, r)
@@ -88,7 +92,7 @@ func DelHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// used for querying tables or adding key/values to table.
+// used for querying tables or adding key/values to table
 func QueryHandler(w http.ResponseWriter, r *http.Request) {
 	// parse request
 	w.Header().Set("Content-Type", "application/json")
@@ -114,8 +118,33 @@ func QueryHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// upon init, selects which filesystem to use based on env variable.
+// basic auth that uses public username/password for check
+func Auth(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user, pass, ok := r.BasicAuth()
+		if !ok || user != username || pass != password {
+			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		next(w, r)
+	}
+}
+
+// upon init, set credentials and filesystem to use
 func init() {
+	// 1: set credentials
+	if username = os.Getenv("EM_USERNAME"); username == "" {
+		username = "admin"
+		log.Printf("set username to: %s", username)
+	}
+	if password = os.Getenv("EM_PASSWORD"); password == "" {
+		b := make([]byte, 12)
+		rand.Read(b) //nolint:errcheck
+		password = base64.URLEncoding.EncodeToString(b)
+		log.Printf("set password to: %s", password)
+	}
+	// 2: set filesystem
 	switch os.Getenv("EM_FILESYSTEM") {
 	// case "aws": < this will be the pattern
 	// 	log.Println("aws not implemented yet")

@@ -13,6 +13,7 @@ type EntryPayload struct {
 	TableName string   `json:"table"`
 	Key       []string `json:"key"`
 	Value     any      `json:"value"`
+	Mode      string   `json:"mode"`
 }
 
 type QueryPayload struct {

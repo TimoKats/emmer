@@ -7,7 +7,7 @@ import (
 
 type EntryItem struct{}
 
-// used to query on multi-keys. E.g. [1,2,3] returns map[1,2,3]
+// used to query on multi-keys. E.g. [1,2,3] returns map[1,2,3] > value
 func (query *QueryPayload) filterEntry(data map[string]any) (any, error) {
 	if len(query.Key) == 0 {
 		return data, nil
@@ -55,7 +55,7 @@ func (EntryItem) Add(payload []byte) error {
 	if _, err := fs.Fetch(entry.TableName); err != nil {
 		return err
 	}
-	return fs.UpdateJSON(entry.TableName, entry.Key, entry.Value)
+	return fs.UpdateJSON(entry.TableName, entry.Key, entry.Value, entry.Mode)
 }
 
 // query for an entry in a table. Returns query result.
