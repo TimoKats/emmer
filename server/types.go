@@ -1,36 +1,27 @@
 package server
 
-// enums
-
-type Path int
-type Format string
-
-const (
-	Json  Format = "json"
-	Jsonl        = "jsonl"
-	Csv          = "csv"
-)
-
-const (
-	Table Path = iota
-	Row
-)
-
-// structs
-
 type Response struct {
 	Message string `json:"message"`
-	Status  int    `json:"status"`
+	Result  any    `json:"result"`
 }
 
 type TablePayload struct {
-	Name    string   `json:"name"`
-	Columns []string `json:"columns"`
-
-	FileFormat Format `json:"format"`
+	Name string `json:"name"`
 }
 
-type RowPayload struct {
+type EntryPayload struct {
 	TableName string   `json:"table"`
-	Values    []string `json:"values"`
+	Key       []string `json:"key"`
+	Value     any      `json:"value"`
+}
+
+type QueryPayload struct {
+	Key       []string `json:"key"`
+	TableName string   `json:"table"`
+}
+
+type Item interface {
+	Add(payload []byte) error
+	Del(payload []byte) error
+	Query(payload []byte) (Response, error)
 }
