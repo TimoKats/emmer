@@ -32,7 +32,7 @@ func parsePost(w http.ResponseWriter, r *http.Request) []byte {
 	return payload
 }
 
-// this function selects the interface based on the URL path
+// helper function that selects the interface based on the URL path
 func parsePathValue(value string) (Item, error) {
 	switch value {
 	case "table":
@@ -58,12 +58,12 @@ func AddHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// switch paths for add (are we adding table or entry?)
-	data, err := parsePathValue(r.PathValue("item"))
+	item, err := parsePathValue(r.PathValue("item"))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 	}
 	// execute add on item
-	if err := data.Add(payload); err != nil {
+	if err := item.Add(payload); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -77,12 +77,12 @@ func DelHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// switch paths for add (are we adding table or entry?)
-	data, err := parsePathValue(r.PathValue("item"))
+	item, err := parsePathValue(r.PathValue("item"))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 	}
 	// execute del on item
-	if err := data.Del(payload); err != nil {
+	if err := item.Del(payload); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -97,12 +97,12 @@ func QueryHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// switch paths for add (are we adding table or entry?)
-	data, err := parsePathValue(r.PathValue("item"))
+	item, err := parsePathValue(r.PathValue("item"))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 	}
 	// execute and return query
-	response, err := data.Query(payload)
+	response, err := item.Query(payload)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
