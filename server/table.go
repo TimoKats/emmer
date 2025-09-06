@@ -13,7 +13,7 @@ func (TableItem) Del(payload []byte) error {
 	if err := json.Unmarshal(payload, &table); err != nil {
 		return err
 	}
-	return fs.DeleteFile(table.Name)
+	return config.fs.DeleteFile(table.Name)
 }
 
 // parses payload of table, and creates it if it doesn't exist.
@@ -27,10 +27,10 @@ func (TableItem) Add(payload []byte) error {
 		return errors.New("no table name provided")
 	}
 	// fetching table contents
-	if _, err := fs.Fetch(table.Name); err == nil {
+	if _, err := config.fs.Fetch(table.Name); err == nil {
 		return errors.New("table " + table.Name + " already exists")
 	}
-	return fs.CreateJSON(table.Name)
+	return config.fs.CreateJSON(table.Name)
 }
 
 // queries tables (so not table contents)
@@ -43,7 +43,7 @@ func (TableItem) Query(payload []byte) (Response, error) {
 		return Response{}, err
 	}
 	// fetch store contents
-	files, err := fs.List()
+	files, err := config.fs.List()
 	if err != nil {
 		return response, err
 	}

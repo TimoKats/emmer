@@ -15,9 +15,7 @@ import (
 	"os"
 )
 
-var fs emmerFs.FileSystem
-var username string
-var password string
+var config Config
 
 // helper function to parse the payload of a post request
 func parsePost(w http.ResponseWriter, r *http.Request) []byte {
@@ -119,7 +117,7 @@ func QueryHandler(w http.ResponseWriter, r *http.Request) {
 func Auth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user, pass, ok := r.BasicAuth()
-		if !ok || user != username || pass != password {
+		if !ok || user != config.username || pass != config.password {
 			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
@@ -130,23 +128,22 @@ func Auth(next http.HandlerFunc) http.HandlerFunc {
 
 // upon init, set credentials and filesystem to use
 func init() {
-	// 1: set credentials
-	if username = os.Getenv("EM_USERNAME"); username == "" {
+	username := os.Getenv("EM_USERNAME")
+	if username == "" {
 		username = "admin"
 		log.Printf("set username to: %s", username)
 	}
-	if password = os.Getenv("EM_PASSWORD"); password == "" {
+	password := os.Getenv("EM_PASSWORD")
+	if password == "" {
 		b := make([]byte, 12)
 		rand.Read(b) //nolint:errcheck
 		password = base64.URLEncoding.EncodeToString(b)
 		log.Printf("set password to: %s", password)
 	}
-	// 2: set filesystem
-	switch os.Getenv("EM_FILESYSTEM") {
-	// case "aws": < this will be the pattern
-	// 	log.Println("aws not implemented yet")
-	default:
-		fs = emmerFs.SetupLocal()
+	config = Config{
+		autoTable: !(os.Getenv("EM_AUTOTABLE") == "false"),
+		username:  username,
+		password:  password,
+		fs:        emmerFs.SetupLocal(),
 	}
-	log.Println("selected " + fs.Info())
 }

@@ -1,5 +1,14 @@
 package server
 
+import emmerFs "github.com/TimoKats/emmer/server/fs"
+
+type Config struct {
+	autoTable bool
+	username  string
+	password  string
+	fs        emmerFs.FileSystem
+}
+
 type Response struct {
 	Message string `json:"message"`
 	Result  any    `json:"result"`

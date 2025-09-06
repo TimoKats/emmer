@@ -18,7 +18,8 @@ func TestApi(t *testing.T) {
 		expectedStatus int
 	}{
 		{"/api/ping", "", http.StatusOK},
-		{"/api/table/add", `{"name":"test"}`, http.StatusOK},
+		{"/api/entry/add", `{"table":"test"}`, http.StatusOK},
+		{"/api/table/add", `{"name":"test"}`, http.StatusInternalServerError},
 		{"/api/entry/add", `{"table":"test","key":["a"],"value":"b"}`, http.StatusOK},
 		{"/api/entry/query", `{"table":"test","key":["a"]}`, http.StatusOK},
 		{"/api/table/del", `{"name":"test"}`, http.StatusOK},

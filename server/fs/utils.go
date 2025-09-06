@@ -4,7 +4,7 @@ import (
 	"errors"
 )
 
-// creates new value based on parameter and mode
+// creates new value based on parameter and mode (add error return)
 func updateValue(current any, new any, mode string) any {
 	switch mode {
 	case "append":
@@ -13,9 +13,19 @@ func updateValue(current any, new any, mode string) any {
 			return append(tempSlice, new)
 		} else if current == nil {
 			return []any{new}
-		} else {
-			return append([]any{current}, new)
 		}
+		return append([]any{current}, new)
+
+	case "increment":
+		// if it's an increment, either increase, or replace.
+		currentInt, currentOk := current.(float64)
+		newInt, newOk := new.(float64)
+		if currentOk && newOk {
+			return currentInt + newInt
+		} else if newOk {
+			return newInt
+		}
+		return current
 	default:
 		return new
 	}

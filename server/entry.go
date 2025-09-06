@@ -36,11 +36,11 @@ func (EntryItem) Del(payload []byte) error {
 	if len(entry.TableName) == 0 && len(entry.Key) == 0 {
 		return errors.New("no table/key supplied")
 	}
-	path, err := fs.Fetch(entry.TableName)
+	path, err := config.fs.Fetch(entry.TableName)
 	if err != nil {
 		return err
 	}
-	return fs.DeleteJson(path, entry.Key)
+	return config.fs.DeleteJson(path, entry.Key)
 }
 
 // parses entry payload and updates the corresponding table
@@ -52,10 +52,17 @@ func (EntryItem) Add(payload []byte) error {
 	if len(entry.TableName) == 0 && len(entry.Key) == 0 {
 		return errors.New("no table/key supplied")
 	}
-	if _, err := fs.Fetch(entry.TableName); err != nil {
-		return err
+	_, err := config.fs.Fetch(entry.TableName)
+	if err != nil {
+		// if it doesn't exist, create it. still errors? return error.
+		if config.autoTable {
+			err = config.fs.CreateJSON(entry.TableName)
+		}
+		if err != nil {
+			return err
+		}
 	}
-	return fs.UpdateJSON(entry.TableName, entry.Key, entry.Value, entry.Mode)
+	return config.fs.UpdateJSON(entry.TableName, entry.Key, entry.Value, entry.Mode)
 }
 
 // query for an entry in a table. Returns query result.
@@ -66,11 +73,11 @@ func (EntryItem) Query(payload []byte) (Response, error) {
 		return Response{}, err
 	}
 	// fetching table contents
-	if _, err := fs.Fetch(query.TableName); err != nil {
+	if _, err := config.fs.Fetch(query.TableName); err != nil {
 		return response, err
 	}
 	// filter contents on query
-	data, err := fs.ReadJSON(query.TableName)
+	data, err := config.fs.ReadJSON(query.TableName)
 	if err == nil {
 		response.Result, err = query.filterEntry(data)
 	}
