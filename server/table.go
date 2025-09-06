@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"errors"
+	"log"
 )
 
 type TableItem struct{}
@@ -13,6 +14,7 @@ func (TableItem) Del(payload []byte) error {
 	if err := json.Unmarshal(payload, &table); err != nil {
 		return err
 	}
+	log.Printf("deleting table: %s", table.Name)
 	return config.fs.DeleteFile(table.Name)
 }
 
@@ -30,6 +32,7 @@ func (TableItem) Add(payload []byte) error {
 	if _, err := config.fs.Fetch(table.Name); err == nil {
 		return errors.New("table " + table.Name + " already exists")
 	}
+	log.Printf("creating table: %s", table.Name)
 	return config.fs.CreateJSON(table.Name)
 }
 

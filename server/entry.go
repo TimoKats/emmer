@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"errors"
+	"log"
 )
 
 type EntryItem struct{}
@@ -40,6 +41,7 @@ func (EntryItem) Del(payload []byte) error {
 	if err != nil {
 		return err
 	}
+	log.Printf("deleting key %s in %v", entry.Key, entry.TableName)
 	return config.fs.DeleteJson(path, entry.Key)
 }
 
@@ -62,6 +64,7 @@ func (EntryItem) Add(payload []byte) error {
 			return err
 		}
 	}
+	log.Printf("adding value for %s in table %s", entry.Key, entry.TableName)
 	return config.fs.UpdateJSON(entry.TableName, entry.Key, entry.Value, entry.Mode)
 }
 
