@@ -141,7 +141,7 @@ func init() {
 		log.Printf("set password to: %s", password)
 	}
 	config = Config{
-		autoTable: !(os.Getenv("EM_AUTOTABLE") == "false"),
+		autoTable: os.Getenv("EM_AUTOTABLE") != "false",
 		username:  username,
 		password:  password,
 		fs:        emmerFs.SetupLocal(),
