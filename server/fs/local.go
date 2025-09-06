@@ -148,6 +148,7 @@ func SetupLocal() *LocalFS {
 			log.Panic("can't setup emmer folder")
 		}
 	}
+	log.Printf("selected local fs in: %s", folder)
 	return &LocalFS{
 		Folder: folder,
 	}

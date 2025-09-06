@@ -15,9 +15,7 @@ import (
 	"os"
 )
 
-var fs emmerFs.FileSystem
-var username string
-var password string
+var config Config
 
 // helper function to parse the payload of a post request
 func parsePost(w http.ResponseWriter, r *http.Request) []byte {
@@ -34,7 +32,7 @@ func parsePost(w http.ResponseWriter, r *http.Request) []byte {
 	return payload
 }
 
-// this function selects the interface based on the URL path
+// helper function that selects the interface based on the URL path
 func parsePathValue(value string) (Item, error) {
 	switch value {
 	case "table":
@@ -48,10 +46,7 @@ func parsePathValue(value string) (Item, error) {
 
 // does nothing. Only used for health checks
 func PingHandler(w http.ResponseWriter, r *http.Request) {
-	_, err := fmt.Fprintln(w, "pong")
-	if err != nil {
-		log.Println(err)
-	}
+	fmt.Fprintln(w, "pong") //nolint:errcheck
 }
 
 // used for creating tables or adding key/values to table
@@ -63,12 +58,12 @@ func AddHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// switch paths for add (are we adding table or entry?)
-	data, err := parsePathValue(r.PathValue("item"))
+	item, err := parsePathValue(r.PathValue("item"))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 	}
 	// execute add on item
-	if err := data.Add(payload); err != nil {
+	if err := item.Add(payload); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -82,12 +77,12 @@ func DelHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// switch paths for add (are we adding table or entry?)
-	data, err := parsePathValue(r.PathValue("item"))
+	item, err := parsePathValue(r.PathValue("item"))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 	}
 	// execute del on item
-	if err := data.Del(payload); err != nil {
+	if err := item.Del(payload); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -102,12 +97,12 @@ func QueryHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// switch paths for add (are we adding table or entry?)
-	data, err := parsePathValue(r.PathValue("item"))
+	item, err := parsePathValue(r.PathValue("item"))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 	}
 	// execute and return query
-	response, err := data.Query(payload)
+	response, err := item.Query(payload)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -122,7 +117,7 @@ func QueryHandler(w http.ResponseWriter, r *http.Request) {
 func Auth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user, pass, ok := r.BasicAuth()
-		if !ok || user != username || pass != password {
+		if !ok || user != config.username || pass != config.password {
 			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
@@ -133,23 +128,22 @@ func Auth(next http.HandlerFunc) http.HandlerFunc {
 
 // upon init, set credentials and filesystem to use
 func init() {
-	// 1: set credentials
-	if username = os.Getenv("EM_USERNAME"); username == "" {
+	username := os.Getenv("EM_USERNAME")
+	if username == "" {
 		username = "admin"
 		log.Printf("set username to: %s", username)
 	}
-	if password = os.Getenv("EM_PASSWORD"); password == "" {
+	password := os.Getenv("EM_PASSWORD")
+	if password == "" {
 		b := make([]byte, 12)
 		rand.Read(b) //nolint:errcheck
 		password = base64.URLEncoding.EncodeToString(b)
 		log.Printf("set password to: %s", password)
 	}
-	// 2: set filesystem
-	switch os.Getenv("EM_FILESYSTEM") {
-	// case "aws": < this will be the pattern
-	// 	log.Println("aws not implemented yet")
-	default:
-		fs = emmerFs.SetupLocal()
+	config = Config{
+		autoTable: os.Getenv("EM_AUTOTABLE") != "false",
+		username:  username,
+		password:  password,
+		fs:        emmerFs.SetupLocal(),
 	}
-	log.Println("selected " + fs.Info())
 }
