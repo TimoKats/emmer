@@ -21,8 +21,6 @@ func getFlags() flags {
 func main() {
 	// basics
 	flags := getFlags()
-	fs := http.FileServer(http.Dir("web/static"))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	// api
 	http.HandleFunc("/api/ping", server.PingHandler)
