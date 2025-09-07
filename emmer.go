@@ -4,7 +4,6 @@ import (
 	"flag"
 	"log"
 	"net/http"
-	"text/template"
 
 	server "github.com/TimoKats/emmer/server"
 )
@@ -19,31 +18,9 @@ func getFlags() flags {
 	return flags{port: ":" + *port}
 }
 
-func adminPage(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("web/index.tpl")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	data := struct {
-		Title   string
-		Message string
-	}{
-		Title:   "Hello, World!",
-		Message: "Welcome to my simple Go web server!",
-	}
-	err = tmpl.Execute(w, data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
 func main() {
 	// basics
 	flags := getFlags()
-	fs := http.FileServer(http.Dir("web/static"))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
-	http.HandleFunc("/", adminPage)
 
 	// api
 	http.HandleFunc("/api/ping", server.PingHandler)
