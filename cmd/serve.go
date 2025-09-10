@@ -8,15 +8,11 @@ import (
 )
 
 func serve() {
-	// basics
-	fs := http.FileServer(http.Dir("web/static"))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
-
 	// api
-	http.HandleFunc("/api/ping", server.PingHandler)
-	http.HandleFunc("/api/{item}/add", server.AddHandler)
-	http.HandleFunc("/api/{item}/del", server.DelHandler)
-	http.HandleFunc("/api/{item}/query", server.QueryHandler)
+	http.HandleFunc("/ping", server.PingHandler)
+	http.HandleFunc("/{item}/add", server.AddHandler)
+	http.HandleFunc("/{item}/del", server.DelHandler)
+	http.HandleFunc("/{item}/query", server.QueryHandler)
 
 	// start the server
 	log.Println("server is running on http://localhost:8080")

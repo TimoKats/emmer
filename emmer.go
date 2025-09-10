@@ -23,10 +23,10 @@ func main() {
 	flags := getFlags()
 
 	// api
-	http.HandleFunc("/api/ping", server.PingHandler)
-	http.HandleFunc("/api/{item}/add", server.Auth(server.AddHandler))
-	http.HandleFunc("/api/{item}/del", server.Auth(server.DelHandler))
-	http.HandleFunc("/api/{item}/query", server.Auth(server.QueryHandler))
+	http.HandleFunc("/ping", server.PingHandler)
+	http.HandleFunc("/{item}/add", server.Auth(server.AddHandler))
+	http.HandleFunc("/{item}/del", server.Auth(server.DelHandler))
+	http.HandleFunc("/{item}/query", server.Auth(server.QueryHandler))
 
 	// start the server
 	log.Println("server is running on http://localhost" + flags.port)
