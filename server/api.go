@@ -41,6 +41,17 @@ func parseRequest(w http.ResponseWriter, r *http.Request) Request {
 	return request
 }
 
+func parseResponse(w http.ResponseWriter, response Response) error {
+	if response.Error != nil {
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(500)
+		return json.NewEncoder(w).Encode(response.Error.Error())
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	return json.NewEncoder(w).Encode(response.Data)
+}
+
 func selectItem(request Request) (Item, error) {
 	if len(request.Key) > 0 {
 		return EntryItem{}, nil
@@ -61,7 +72,7 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
 	switch request.Method {
 	case "PUT":
 		response = item.Add(request)
-	case "DEL":
+	case "DELETE":
 		response = item.Del(request)
 	case "GET":
 		response = item.Query(request)
@@ -69,7 +80,7 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "please use put/del/get", http.StatusMethodNotAllowed)
 	}
 	// check errors and return response
-	if err := json.NewEncoder(w).Encode(response); err != nil {
+	if err := parseResponse(w, response); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -77,8 +88,6 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
 
 // does nothing. Only used for health checks
 func PingHandler(w http.ResponseWriter, r *http.Request) {
-	request := parseRequest(w, r)
-	log.Println(request)
 	fmt.Fprintln(w, "pong") //nolint:errcheck
 }
 

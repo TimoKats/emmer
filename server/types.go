@@ -1,6 +1,8 @@
 package server
 
-import emmerFs "github.com/TimoKats/emmer/server/fs"
+import (
+	emmerFs "github.com/TimoKats/emmer/server/fs"
+)
 
 type Config struct {
 	autoTable bool
@@ -10,9 +12,8 @@ type Config struct {
 }
 
 type Response struct {
-	StatusCode int
-	Message    string `json:"message"`
-	Result     any    `json:"result"`
+	Error error
+	Data  any
 }
 
 type Request struct {
@@ -27,22 +28,4 @@ type Item interface {
 	Add(request Request) Response
 	Del(request Request) Response
 	Query(request Request) Response
-}
-
-// generic helper function that formats the response object
-func formatResponse(err error, message string, result any) Response {
-	if err != nil {
-		return Response{
-			StatusCode: 500,
-			Message:    err.Error(),
-		}
-	}
-	if len(message) == 0 {
-		message = "success"
-	}
-	return Response{
-		StatusCode: 200,
-		Message:    message,
-		Result:     result,
-	}
 }
