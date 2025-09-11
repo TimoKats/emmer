@@ -53,17 +53,25 @@ func selectItem(request Request) (Item, error) {
 
 // helper function that selects the interface based on the URL path
 func ApiHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var response Response
 	request := parseRequest(w, r)
 	item, _ := selectItem(request)
+	// select function
 	switch request.Method {
 	case "PUT":
-		item.Add(request)
+		response = item.Add(request)
 	case "DEL":
-		item.Del(request)
+		response = item.Del(request)
 	case "GET":
-		item.Query(request)
+		response = item.Query(request)
 	default:
 		http.Error(w, "please use put/del/get", http.StatusMethodNotAllowed)
+	}
+	// check errors and return response
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 

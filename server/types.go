@@ -10,8 +10,9 @@ type Config struct {
 }
 
 type Response struct {
-	Message string `json:"message"`
-	Result  any    `json:"result"`
+	StatusCode int
+	Message    string `json:"message"`
+	Result     any    `json:"result"`
 }
 
 type Request struct {
@@ -23,7 +24,25 @@ type Request struct {
 }
 
 type Item interface {
-	Add(request Request) error
-	Del(request Request) error
-	Query(request Request) (Response, error)
+	Add(request Request) Response
+	Del(request Request) Response
+	Query(request Request) Response
+}
+
+// generic helper function that formats the response object
+func formatResponse(err error, message string, result any) Response {
+	if err != nil {
+		return Response{
+			StatusCode: 500,
+			Message:    err.Error(),
+		}
+	}
+	if len(message) == 0 {
+		message = "success"
+	}
+	return Response{
+		StatusCode: 200,
+		Message:    message,
+		Result:     result,
+	}
 }
