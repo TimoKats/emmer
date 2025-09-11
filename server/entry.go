@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"errors"
 	"log"
 )
@@ -9,12 +8,12 @@ import (
 type EntryItem struct{}
 
 // used to query on multi-keys. E.g. [1,2,3] returns map[1,2,3] > value
-func (query *QueryPayload) filterEntry(data map[string]any) (any, error) {
-	if len(query.Key) == 0 {
+func (request *Request) filterEntry(data map[string]any) (any, error) {
+	if len(request.Key) == 0 {
 		return data, nil
 	}
 	current := data
-	for _, step := range query.Key {
+	for _, step := range request.Key {
 		match, ok := current[step].(map[string]any)
 		if !ok {
 			if _, ok := current[step]; !ok {
@@ -29,60 +28,42 @@ func (query *QueryPayload) filterEntry(data map[string]any) (any, error) {
 }
 
 // fetches path for table name, then removes key from JSON.
-func (EntryItem) Del(payload []byte) error {
-	var entry EntryPayload
-	if err := json.Unmarshal(payload, &entry); err != nil {
-		return err
-	}
-	if len(entry.TableName) == 0 && len(entry.Key) == 0 {
-		return errors.New("no table/key supplied")
-	}
-	path, err := config.fs.Fetch(entry.TableName)
+func (EntryItem) Del(request Request) error {
+	log.Printf("deleting key %s in %v", request.Key, request.Table)
+	path, err := config.fs.Fetch(request.Table)
 	if err != nil {
 		return err
 	}
-	log.Printf("deleting key %s in %v", entry.Key, entry.TableName)
-	return config.fs.DeleteJson(path, entry.Key)
+	return config.fs.DeleteJson(path, request.Key)
 }
 
 // parses entry payload and updates the corresponding table
-func (EntryItem) Add(payload []byte) error {
-	var entry EntryPayload
-	if err := json.Unmarshal(payload, &entry); err != nil {
-		return err
-	}
-	if len(entry.TableName) == 0 && len(entry.Key) == 0 {
-		return errors.New("no table/key supplied")
-	}
-	_, err := config.fs.Fetch(entry.TableName)
+func (EntryItem) Add(request Request) error {
+	log.Printf("adding value for %s in table %s", request.Key, request.Table)
+	_, err := config.fs.Fetch(request.Table)
 	if err != nil {
 		// if it doesn't exist, create it. still errors? return error.
 		if config.autoTable {
-			err = config.fs.CreateJSON(entry.TableName)
+			err = config.fs.CreateJSON(request.Table)
 		}
 		if err != nil {
 			return err
 		}
 	}
-	log.Printf("adding value for %s in table %s", entry.Key, entry.TableName)
-	return config.fs.UpdateJSON(entry.TableName, entry.Key, entry.Value, entry.Mode)
+	return config.fs.UpdateJSON(request.Table, request.Key, request.Value, request.Mode)
 }
 
 // query for an entry in a table. Returns query result.
-func (EntryItem) Query(payload []byte) (Response, error) {
+func (EntryItem) Query(request Request) (Response, error) {
+	log.Printf("query-ing table %s", request.Table)
 	var response Response
-	var query QueryPayload
-	if err := json.Unmarshal(payload, &query); err != nil {
-		return Response{}, err
-	}
-	// fetching table contents
-	if _, err := config.fs.Fetch(query.TableName); err != nil {
+	if _, err := config.fs.Fetch(request.Table); err != nil {
 		return response, err
 	}
 	// filter contents on query
-	data, err := config.fs.ReadJSON(query.TableName)
+	data, err := config.fs.ReadJSON(request.Table)
 	if err == nil {
-		response.Result, err = query.filterEntry(data)
+		response.Result, err = request.filterEntry(data)
 	}
 	return response, err
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"strings"
 
 	emmerFs "github.com/TimoKats/emmer/server/fs"
 
@@ -17,100 +18,60 @@ import (
 
 var config Config
 
-// helper function to parse the payload of a post request
-func parsePost(w http.ResponseWriter, r *http.Request) []byte {
-	if r.Method != http.MethodPost {
-		http.Error(w, "wrong method", http.StatusMethodNotAllowed)
-		return nil
+func parseRequest(w http.ResponseWriter, r *http.Request) Request {
+	// parse URL path
+	request := Request{Method: r.Method}
+	urlPath := r.URL.Path[len("/api/"):]
+	urlItems := strings.Split(urlPath, "/")
+	if len(urlItems) > 0 {
+		request.Table = urlItems[0]
+		if len(urlItems) > 1 {
+			request.Key = urlItems[1:]
+		}
 	}
+	// parse request body
 	payload, err := io.ReadAll(r.Body)
 	defer r.Body.Close() //nolint:errcheck
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return nil
+		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
-	return payload
+	if err := json.Unmarshal(payload, &request.Value); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+	return request
+}
+
+func selectItem(request Request) (Item, error) {
+	if len(request.Key) > 0 {
+		return EntryItem{}, nil
+	}
+	if len(request.Table) > 0 {
+		return TableItem{}, nil
+	}
+	return nil, errors.New("no table / key provided")
 }
 
 // helper function that selects the interface based on the URL path
-func parsePathValue(value string) (Item, error) {
-	switch value {
-	case "table":
-		return TableItem{}, nil
-	case "entry":
-		return EntryItem{}, nil
+func ApiHandler(w http.ResponseWriter, r *http.Request) {
+	request := parseRequest(w, r)
+	item, _ := selectItem(request)
+	switch request.Method {
+	case "PUT":
+		item.Add(request)
+	case "DEL":
+		item.Del(request)
+	case "GET":
+		item.Query(request)
 	default:
-		return nil, errors.New("path " + value + " invalid")
+		http.Error(w, "please use put/del/get", http.StatusMethodNotAllowed)
 	}
 }
 
 // does nothing. Only used for health checks
 func PingHandler(w http.ResponseWriter, r *http.Request) {
+	request := parseRequest(w, r)
+	log.Println(request)
 	fmt.Fprintln(w, "pong") //nolint:errcheck
-}
-
-// used for creating tables or adding key/values to table
-func AddHandler(w http.ResponseWriter, r *http.Request) {
-	// parse request
-	payload := parsePost(w, r)
-	if payload == nil {
-		http.Error(w, "no payload", http.StatusBadRequest)
-		return
-	}
-	// switch paths for add (are we adding table or entry?)
-	item, err := parsePathValue(r.PathValue("item"))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
-	}
-	// execute add on item
-	if err := item.Add(payload); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-// used for creating tables or adding key/values to table.
-func DelHandler(w http.ResponseWriter, r *http.Request) {
-	// parse request
-	payload := parsePost(w, r)
-	if payload == nil {
-		http.Error(w, "no payload", http.StatusBadRequest)
-		return
-	}
-	// switch paths for add (are we adding table or entry?)
-	item, err := parsePathValue(r.PathValue("item"))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
-	}
-	// execute del on item
-	if err := item.Del(payload); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-// used for querying tables or adding key/values to table
-func QueryHandler(w http.ResponseWriter, r *http.Request) {
-	// parse request
-	w.Header().Set("Content-Type", "application/json")
-	payload := parsePost(w, r)
-	if payload == nil {
-		http.Error(w, "no payload", http.StatusBadRequest)
-		return
-	}
-	// switch paths for add (are we adding table or entry?)
-	item, err := parsePathValue(r.PathValue("item"))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
-	}
-	// execute and return query
-	response, err := item.Query(payload)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
 }
 
 // basic auth that uses public username/password for check

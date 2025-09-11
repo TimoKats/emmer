@@ -9,10 +9,12 @@ import (
 
 func serve() {
 	// api
-	http.HandleFunc("/ping", server.PingHandler)
-	http.HandleFunc("/{item}/add", server.AddHandler)
-	http.HandleFunc("/{item}/del", server.DelHandler)
-	http.HandleFunc("/{item}/query", server.QueryHandler)
+	// http.HandleFunc("/ping", server.PingHandler)
+	// http.HandleFunc("/{item}/add", server.AddHandler)
+	// http.HandleFunc("/{item}/del", server.DelHandler)
+	// http.HandleFunc("/{item}/query", server.QueryHandler)
+
+	http.HandleFunc("/api/", server.PingHandler)
 
 	// start the server
 	log.Println("server is running on http://localhost:8080")

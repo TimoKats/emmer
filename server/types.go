@@ -14,24 +14,16 @@ type Response struct {
 	Result  any    `json:"result"`
 }
 
-type TablePayload struct {
-	Name string `json:"name"`
-}
-
-type EntryPayload struct {
-	TableName string   `json:"table"`
-	Key       []string `json:"key"`
-	Value     any      `json:"value"`
-	Mode      string   `json:"mode"`
-}
-
-type QueryPayload struct {
-	Key       []string `json:"key"`
-	TableName string   `json:"table"`
+type Request struct {
+	Method string // to enum
+	Table  string
+	Key    []string
+	Mode   string // increment, append, empty
+	Value  any
 }
 
 type Item interface {
-	Add(payload []byte) error
-	Del(payload []byte) error
-	Query(payload []byte) (Response, error)
+	Add(request Request) error
+	Del(request Request) error
+	Query(request Request) (Response, error)
 }
