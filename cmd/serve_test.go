@@ -33,7 +33,7 @@ func SendRequest(cfg RequestConfig) int {
 		log.Println(err)
 		return 0
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 	return resp.StatusCode
 }
 
