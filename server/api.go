@@ -21,7 +21,7 @@ var config Config
 // get HTTP request and format it into Request object used by server
 func parseRequest(r *http.Request) (Request, error) {
 	// parse URL path
-	request := Request{Method: r.Method}
+	request := Request{Method: r.Method, Mode: r.FormValue("mode")}
 	urlPath := r.URL.Path[len("/api/"):]
 	urlItems := strings.Split(urlPath, "/")
 	if len(urlItems) > 0 {

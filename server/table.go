@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"log"
 )
 
@@ -20,15 +21,16 @@ func (TableItem) Del(request Request) Response {
 func (TableItem) Add(request Request) Response {
 	log.Printf("creating table: %s", request.Table)
 	if _, err := config.fs.Fetch(request.Table); err == nil {
-		return Response{Data: nil, Error: err}
+		return Response{Data: nil, Error: errors.New("table already exists")}
 	}
-	err := config.fs.CreateJSON(request.Table)
+	err := config.fs.CreateJSON(request.Table, request.Value)
 	return Response{Data: "added " + request.Table, Error: err}
 }
 
 // queries tables (so not table contents)
 func (TableItem) Query(request Request) Response {
 	log.Printf("creating table meta-data: %s", request.Table)
+	// fetch all tables
 	result := make(map[string]any)
 	files, err := config.fs.List()
 	if err != nil {

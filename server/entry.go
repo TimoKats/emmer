@@ -33,7 +33,7 @@ func (EntryItem) Del(request Request) Response {
 	if _, err := config.fs.Fetch(request.Table); err != nil {
 		return Response{Data: nil, Error: err}
 	}
-	err := config.fs.DeleteJson(request.Table, request.Key)
+	err := config.fs.DeleteJSON(request.Table, request.Key)
 	return Response{Data: "deleted key in " + request.Table, Error: err}
 }
 
@@ -43,7 +43,7 @@ func (EntryItem) Add(request Request) Response {
 	if _, err := config.fs.Fetch(request.Table); err != nil {
 		// if it doesn't exist, create it. still errors? return error.
 		if config.autoTable {
-			err = config.fs.CreateJSON(request.Table)
+			err = config.fs.CreateJSON(request.Table, request.Value)
 		}
 		if err != nil {
 			return Response{Data: nil, Error: err}

@@ -20,14 +20,19 @@ func (io LocalFS) getPath(filename string) string {
 }
 
 // creates empty JSON file at path
-func (io LocalFS) CreateJSON(filename string) error {
+func (io LocalFS) CreateJSON(filename string, value any) error {
 	path := io.getPath(filename)
 	f, err := os.Create(path)
 	if err != nil {
 		return err
 	}
 	defer f.Close() //nolint:errcheck
-	_, err = f.WriteString("{}")
+	bytes, err := json.Marshal(value)
+	if err != nil || value == nil {
+		_, err = f.WriteString("{}")
+		return err
+	}
+	_, err = f.Write(bytes)
 	return err
 }
 
@@ -65,7 +70,7 @@ func (io LocalFS) UpdateJSON(filename string, key []string, value any, mode stri
 }
 
 // removes key from json file, writes to fs
-func (io LocalFS) DeleteJson(filename string, key []string) error {
+func (io LocalFS) DeleteJSON(filename string, key []string) error {
 	// get json data
 	path := io.getPath(filename)
 	data, err := io.ReadJSON(filename)
