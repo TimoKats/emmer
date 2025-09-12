@@ -8,12 +8,12 @@ import (
 type EntryItem struct{}
 
 // used to query on multi-keys. E.g. [1,2,3] returns map[1,2,3] > value
-func (request *Request) filterEntry(data map[string]any) (any, error) {
-	if len(request.Key) == 0 || request.Key[0] == "" {
+func findKey(data map[string]any, key []string) (any, error) {
+	if len(key) == 0 || key[0] == "" {
 		return data, nil
 	}
 	current := data
-	for _, step := range request.Key {
+	for _, step := range key {
 		match, ok := current[step].(map[string]any)
 		if !ok {
 			if _, ok := current[step]; !ok {
@@ -24,7 +24,6 @@ func (request *Request) filterEntry(data map[string]any) (any, error) {
 		current = match
 	}
 	return current, nil
-
 }
 
 // fetches path for table name, then removes key from JSON.
@@ -40,8 +39,8 @@ func (EntryItem) Del(request Request) Response {
 // parses entry payload and updates the corresponding table
 func (EntryItem) Add(request Request) Response {
 	log.Printf("adding value for %s in table %s", request.Key, request.Table)
+	// if it doesn't exist, create it. still errors? return error.
 	if _, err := config.fs.Fetch(request.Table); err != nil {
-		// if it doesn't exist, create it. still errors? return error.
 		if config.autoTable {
 			err = config.fs.CreateJSON(request.Table, request.Value)
 		}
@@ -49,6 +48,7 @@ func (EntryItem) Add(request Request) Response {
 			return Response{Data: nil, Error: err}
 		}
 	}
+	// update json file with new values
 	err := config.fs.UpdateJSON(request.Table, request.Key, request.Value, request.Mode)
 	return Response{Data: "added key in " + request.Table, Error: err}
 }
@@ -56,14 +56,16 @@ func (EntryItem) Add(request Request) Response {
 // query for an entry in a table. Returns query result.
 func (EntryItem) Query(request Request) Response {
 	log.Printf("querying table %s", request.Table)
+	// check if json exists
 	if _, err := config.fs.Fetch(request.Table); err != nil {
 		return Response{Data: nil, Error: err}
 	}
-	// filter contents on query
+	// get complete json data
 	data, err := config.fs.ReadJSON(request.Table)
 	if err != nil {
 		return Response{Data: nil, Error: err}
 	}
-	result, err := request.filterEntry(data)
+	// filter json data
+	result, err := findKey(data, request.Key)
 	return Response{Data: result, Error: err}
 }

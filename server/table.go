@@ -29,7 +29,7 @@ func (TableItem) Add(request Request) Response {
 
 // queries tables (so not table contents)
 func (TableItem) Query(request Request) Response {
-	log.Printf("creating table meta-data: %s", request.Table)
+	log.Printf("querying table meta-data: %s", request.Table)
 	// fetch all tables
 	result := make(map[string]any)
 	files, err := config.fs.List()

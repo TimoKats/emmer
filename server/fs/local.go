@@ -19,7 +19,7 @@ func (io LocalFS) getPath(filename string) string {
 	return filepath.Join(io.Folder, filename) + ".json"
 }
 
-// creates empty JSON file at path
+// creates empty (or prefilled) JSON file at path
 func (io LocalFS) CreateJSON(filename string, value any) error {
 	path := io.getPath(filename)
 	f, err := os.Create(path)
@@ -38,12 +38,14 @@ func (io LocalFS) CreateJSON(filename string, value any) error {
 
 // reads JSON file into map[string]any variable
 func (io LocalFS) ReadJSON(filename string) (map[string]any, error) {
+	// get raw data
+	data := make(map[string]any)
 	path := io.getPath(filename)
-	var data map[string]any
 	file, err := os.ReadFile(path)
 	if err != nil {
 		return data, err
 	}
+	// put raw data into map object
 	err = json.Unmarshal(file, &data)
 	return data, err
 }

@@ -20,7 +20,7 @@ var config Config
 
 // get HTTP request and format it into Request object used by server
 func parseRequest(r *http.Request) (Request, error) {
-	// parse URL path
+	// parse URL path (parameters, path)
 	request := Request{Method: r.Method, Mode: r.FormValue("mode")}
 	urlPath := r.URL.Path[len("/api/"):]
 	urlItems := strings.Split(urlPath, "/")
@@ -33,13 +33,12 @@ func parseRequest(r *http.Request) (Request, error) {
 	// parse request body
 	payload, err := io.ReadAll(r.Body)
 	defer r.Body.Close() //nolint:errcheck
-	if len(payload) == 0 {
-		return request, nil
-	}
 	if err != nil {
 		return request, err
 	}
-	err = json.Unmarshal(payload, &request.Value)
+	if len(payload) > 0 {
+		err = json.Unmarshal(payload, &request.Value)
+	}
 	return request, err
 }
 
@@ -86,6 +85,7 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
 		response = item.Query(request)
 	default:
 		http.Error(w, "please use put/del/get", http.StatusMethodNotAllowed) // to response
+		return
 	}
 	// check errors and return response
 	if err := parseResponse(w, response); err != nil {
