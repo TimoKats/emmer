@@ -17,7 +17,7 @@ type Response struct {
 }
 
 type Request struct {
-	Method string // to enum
+	Method string // get, put, delete
 	Table  string
 	Key    []string
 	Mode   string // increment, append, empty
