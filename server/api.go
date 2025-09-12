@@ -18,7 +18,8 @@ import (
 
 var config Config
 
-func parseRequest(w http.ResponseWriter, r *http.Request) Request {
+// get HTTP request and format it into Request object used by server
+func parseRequest(r *http.Request) (Request, error) {
 	// parse URL path
 	request := Request{Method: r.Method}
 	urlPath := r.URL.Path[len("/api/"):]
@@ -32,15 +33,17 @@ func parseRequest(w http.ResponseWriter, r *http.Request) Request {
 	// parse request body
 	payload, err := io.ReadAll(r.Body)
 	defer r.Body.Close() //nolint:errcheck
+	if len(payload) == 0 {
+		return request, nil
+	}
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		return request, err
 	}
-	if err := json.Unmarshal(payload, &request.Value); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-	}
-	return request
+	err = json.Unmarshal(payload, &request.Value)
+	return request, err
 }
 
+// takes response object and writes the HTTP response object
 func parseResponse(w http.ResponseWriter, response Response) error {
 	if response.Error != nil {
 		w.Header().Set("Content-Type", "text/plain")
@@ -52,6 +55,7 @@ func parseResponse(w http.ResponseWriter, response Response) error {
 	return json.NewEncoder(w).Encode(response.Data)
 }
 
+// returns the item to apply CRUD operations on
 func selectItem(request Request) (Item, error) {
 	if len(request.Key) > 0 {
 		return EntryItem{}, nil
@@ -64,10 +68,14 @@ func selectItem(request Request) (Item, error) {
 
 // helper function that selects the interface based on the URL path
 func ApiHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+	// set up
 	var response Response
-	request := parseRequest(w, r)
-	item, _ := selectItem(request)
+	request, parseErr := parseRequest(r)
+	item, itemErr := selectItem(request)
+	if err := errors.Join(parseErr, itemErr); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest) // to response
+		return
+	}
 	// select function
 	switch request.Method {
 	case "PUT":
@@ -77,7 +85,7 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		response = item.Query(request)
 	default:
-		http.Error(w, "please use put/del/get", http.StatusMethodNotAllowed)
+		http.Error(w, "please use put/del/get", http.StatusMethodNotAllowed) // to response
 	}
 	// check errors and return response
 	if err := parseResponse(w, response); err != nil {

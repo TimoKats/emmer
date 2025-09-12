@@ -9,11 +9,7 @@ import (
 
 func serve() {
 	// api
-	// http.HandleFunc("/ping", server.PingHandler)
-	// http.HandleFunc("/{item}/add", server.AddHandler)
-	// http.HandleFunc("/{item}/del", server.DelHandler)
-	// http.HandleFunc("/{item}/query", server.QueryHandler)
-
+	http.HandleFunc("/ping", server.PingHandler)
 	http.HandleFunc("/api/", server.ApiHandler)
 
 	// start the server

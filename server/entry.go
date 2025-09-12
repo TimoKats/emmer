@@ -55,7 +55,7 @@ func (EntryItem) Add(request Request) Response {
 
 // query for an entry in a table. Returns query result.
 func (EntryItem) Query(request Request) Response {
-	log.Printf("query-ing table %s", request.Table)
+	log.Printf("querying table %s", request.Table)
 	if _, err := config.fs.Fetch(request.Table); err != nil {
 		return Response{Data: nil, Error: err}
 	}
