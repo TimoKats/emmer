@@ -1,6 +1,8 @@
 package server
 
-import emmerFs "github.com/TimoKats/emmer/server/fs"
+import (
+	emmerFs "github.com/TimoKats/emmer/server/fs"
+)
 
 type Config struct {
 	autoTable bool
@@ -10,28 +12,20 @@ type Config struct {
 }
 
 type Response struct {
-	Message string `json:"message"`
-	Result  any    `json:"result"`
+	Error error
+	Data  any
 }
 
-type TablePayload struct {
-	Name string `json:"name"`
-}
-
-type EntryPayload struct {
-	TableName string   `json:"table"`
-	Key       []string `json:"key"`
-	Value     any      `json:"value"`
-	Mode      string   `json:"mode"`
-}
-
-type QueryPayload struct {
-	Key       []string `json:"key"`
-	TableName string   `json:"table"`
+type Request struct {
+	Method string // get, put, delete
+	Table  string
+	Key    []string
+	Mode   string // increment, append, empty
+	Value  any
 }
 
 type Item interface {
-	Add(payload []byte) error
-	Del(payload []byte) error
-	Query(payload []byte) (Response, error)
+	Add(request Request) Response
+	Del(request Request) Response
+	Query(request Request) Response
 }

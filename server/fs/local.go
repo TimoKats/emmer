@@ -19,26 +19,33 @@ func (io LocalFS) getPath(filename string) string {
 	return filepath.Join(io.Folder, filename) + ".json"
 }
 
-// creates empty JSON file at path
-func (io LocalFS) CreateJSON(filename string) error {
+// creates empty (or prefilled) JSON file at path
+func (io LocalFS) CreateJSON(filename string, value any) error {
 	path := io.getPath(filename)
 	f, err := os.Create(path)
 	if err != nil {
 		return err
 	}
 	defer f.Close() //nolint:errcheck
-	_, err = f.WriteString("{}")
+	bytes, err := json.Marshal(value)
+	if err != nil || value == nil {
+		_, err = f.WriteString("{}")
+		return err
+	}
+	_, err = f.Write(bytes)
 	return err
 }
 
 // reads JSON file into map[string]any variable
 func (io LocalFS) ReadJSON(filename string) (map[string]any, error) {
+	// get raw data
+	data := make(map[string]any)
 	path := io.getPath(filename)
-	var data map[string]any
 	file, err := os.ReadFile(path)
 	if err != nil {
 		return data, err
 	}
+	// put raw data into map object
 	err = json.Unmarshal(file, &data)
 	return data, err
 }
@@ -65,7 +72,7 @@ func (io LocalFS) UpdateJSON(filename string, key []string, value any, mode stri
 }
 
 // removes key from json file, writes to fs
-func (io LocalFS) DeleteJson(filename string, key []string) error {
+func (io LocalFS) DeleteJSON(filename string, key []string) error {
 	// get json data
 	path := io.getPath(filename)
 	data, err := io.ReadJSON(filename)

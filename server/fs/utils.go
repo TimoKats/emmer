@@ -2,6 +2,7 @@ package server
 
 import (
 	"errors"
+	"log"
 )
 
 // creates new value based on parameter and mode (add error return)
@@ -25,6 +26,7 @@ func updateValue(current any, new any, mode string) any {
 		} else if newOk {
 			return newInt
 		}
+		log.Printf("%s not numeric", current)
 		return current
 	default:
 		return new
@@ -41,18 +43,18 @@ func insertNested(data map[string]any, keys []string, value any, mode string) er
 			if _, ok := current[key]; !ok {
 				current[key] = make(map[string]any)
 			}
-			nextMap, ok := current[key].(map[string]any)
+			next, ok := current[key].(map[string]any)
 			if !ok {
 				return errors.New("conflict at key: " + key)
 			}
-			current = nextMap
+			current = next
 		}
 	}
 	return nil
 }
 
 // delete value on nested key (e.g. [1,2,3] > map[1][2][3])
-func deleteNested(data map[string]any, key []string) error { // NOTE: key/keys
+func deleteNested(data map[string]any, key []string) error {
 	keyFound := true
 	current := data
 	for index, step := range key {

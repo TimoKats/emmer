@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"errors"
 	"log"
 )
@@ -9,12 +8,12 @@ import (
 type EntryItem struct{}
 
 // used to query on multi-keys. E.g. [1,2,3] returns map[1,2,3] > value
-func (query *QueryPayload) filterEntry(data map[string]any) (any, error) {
-	if len(query.Key) == 0 {
+func findKey(data map[string]any, key []string) (any, error) {
+	if len(key) == 0 || key[0] == "" {
 		return data, nil
 	}
 	current := data
-	for _, step := range query.Key {
+	for _, step := range key {
 		match, ok := current[step].(map[string]any)
 		if !ok {
 			if _, ok := current[step]; !ok {
@@ -25,64 +24,48 @@ func (query *QueryPayload) filterEntry(data map[string]any) (any, error) {
 		current = match
 	}
 	return current, nil
-
 }
 
 // fetches path for table name, then removes key from JSON.
-func (EntryItem) Del(payload []byte) error {
-	var entry EntryPayload
-	if err := json.Unmarshal(payload, &entry); err != nil {
-		return err
+func (EntryItem) Del(request Request) Response {
+	log.Printf("deleting key %s in %v", request.Key, request.Table)
+	if _, err := config.fs.Fetch(request.Table); err != nil {
+		return Response{Data: nil, Error: err}
 	}
-	if len(entry.TableName) == 0 && len(entry.Key) == 0 {
-		return errors.New("no table/key supplied")
-	}
-	path, err := config.fs.Fetch(entry.TableName)
-	if err != nil {
-		return err
-	}
-	log.Printf("deleting key %s in %v", entry.Key, entry.TableName)
-	return config.fs.DeleteJson(path, entry.Key)
+	err := config.fs.DeleteJSON(request.Table, request.Key)
+	return Response{Data: "deleted key in " + request.Table, Error: err}
 }
 
 // parses entry payload and updates the corresponding table
-func (EntryItem) Add(payload []byte) error {
-	var entry EntryPayload
-	if err := json.Unmarshal(payload, &entry); err != nil {
-		return err
-	}
-	if len(entry.TableName) == 0 && len(entry.Key) == 0 {
-		return errors.New("no table/key supplied")
-	}
-	_, err := config.fs.Fetch(entry.TableName)
-	if err != nil {
-		// if it doesn't exist, create it. still errors? return error.
+func (EntryItem) Add(request Request) Response {
+	log.Printf("adding value for %s in table %s", request.Key, request.Table)
+	// if it doesn't exist, create it. still errors? return error.
+	if _, err := config.fs.Fetch(request.Table); err != nil {
 		if config.autoTable {
-			err = config.fs.CreateJSON(entry.TableName)
+			err = config.fs.CreateJSON(request.Table, request.Value)
 		}
 		if err != nil {
-			return err
+			return Response{Data: nil, Error: err}
 		}
 	}
-	log.Printf("adding value for %s in table %s", entry.Key, entry.TableName)
-	return config.fs.UpdateJSON(entry.TableName, entry.Key, entry.Value, entry.Mode)
+	// update json file with new values
+	err := config.fs.UpdateJSON(request.Table, request.Key, request.Value, request.Mode)
+	return Response{Data: "added key in " + request.Table, Error: err}
 }
 
 // query for an entry in a table. Returns query result.
-func (EntryItem) Query(payload []byte) (Response, error) {
-	var response Response
-	var query QueryPayload
-	if err := json.Unmarshal(payload, &query); err != nil {
-		return Response{}, err
+func (EntryItem) Query(request Request) Response {
+	log.Printf("querying table %s", request.Table)
+	// check if json exists
+	if _, err := config.fs.Fetch(request.Table); err != nil {
+		return Response{Data: nil, Error: err}
 	}
-	// fetching table contents
-	if _, err := config.fs.Fetch(query.TableName); err != nil {
-		return response, err
+	// get complete json data
+	data, err := config.fs.ReadJSON(request.Table)
+	if err != nil {
+		return Response{Data: nil, Error: err}
 	}
-	// filter contents on query
-	data, err := config.fs.ReadJSON(query.TableName)
-	if err == nil {
-		response.Result, err = query.filterEntry(data)
-	}
-	return response, err
+	// filter json data
+	result, err := findKey(data, request.Key)
+	return Response{Data: result, Error: err}
 }
