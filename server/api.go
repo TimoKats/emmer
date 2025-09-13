@@ -99,6 +99,13 @@ func PingHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "pong") //nolint:errcheck
 }
 
+// shows last n (20) logs from server
+func LogsHandler(w http.ResponseWriter, r *http.Request) {
+	for _, entry := range config.logBuffer.GetLogs() {
+		fmt.Fprint(w, entry)
+	}
+}
+
 // basic auth that uses public username/password for check
 func Auth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -114,6 +121,7 @@ func Auth(next http.HandlerFunc) http.HandlerFunc {
 
 // upon init, set credentials and filesystem to use
 func init() {
+	// auth settings
 	username := os.Getenv("EM_USERNAME")
 	if username == "" {
 		username = "admin"
@@ -126,7 +134,12 @@ func init() {
 		password = base64.URLEncoding.EncodeToString(b)
 		log.Printf("set password to: %s", password)
 	}
+	// logs settings
+	buffer := NewLogBuffer(20)
+	log.SetOutput(io.MultiWriter(os.Stdout, buffer))
+	// create config object
 	config = Config{
+		logBuffer: buffer,
 		autoTable: os.Getenv("EM_AUTOTABLE") != "false",
 		username:  username,
 		password:  password,

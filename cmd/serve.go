@@ -9,6 +9,7 @@ import (
 
 func serve() {
 	// api
+	http.HandleFunc("/logs", server.LogsHandler)
 	http.HandleFunc("/ping", server.PingHandler)
 	http.HandleFunc("/api/", server.ApiHandler)
 
