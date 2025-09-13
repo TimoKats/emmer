@@ -7,9 +7,9 @@ import (
 )
 
 type LogBuffer struct {
-	Mu    sync.Mutex
-	Logs  []string
-	Limit int
+	mu    sync.Mutex
+	logs  []string
+	limit int
 }
 
 type Config struct {
