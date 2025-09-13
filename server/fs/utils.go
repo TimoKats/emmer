@@ -19,6 +19,9 @@ func updateValue(current any, new any, mode string) any {
 
 	case "increment":
 		// if it's an increment, either increase, or replace.
+		if new == nil {
+			new = float64(1) // default value
+		}
 		currentInt, currentOk := current.(float64)
 		newInt, newOk := new.(float64)
 		if currentOk && newOk {
@@ -26,7 +29,7 @@ func updateValue(current any, new any, mode string) any {
 		} else if newOk {
 			return newInt
 		}
-		log.Printf("%s not numeric", current)
+		log.Printf("%s, %s both not numeric", current, new)
 		return current
 	default:
 		return new
