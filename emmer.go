@@ -24,6 +24,7 @@ func main() {
 
 	// api
 	http.HandleFunc("/ping", server.PingHandler)
+	http.HandleFunc("/logs", server.Auth(server.LogsHandler))
 	http.HandleFunc("/api/", server.Auth(server.ApiHandler))
 
 	// start the server

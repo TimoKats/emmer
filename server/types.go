@@ -1,10 +1,19 @@
 package server
 
 import (
+	"sync"
+
 	emmerFs "github.com/TimoKats/emmer/server/fs"
 )
 
+type LogBuffer struct {
+	Mu    sync.Mutex
+	Logs  []string
+	Limit int
+}
+
 type Config struct {
+	logBuffer *LogBuffer
 	autoTable bool
 	username  string
 	password  string
