@@ -102,7 +102,7 @@ func PingHandler(w http.ResponseWriter, r *http.Request) {
 // shows last n (20) logs from server
 func LogsHandler(w http.ResponseWriter, r *http.Request) {
 	for _, entry := range config.logBuffer.GetLogs() {
-		fmt.Fprint(w, entry)
+		fmt.Fprint(w, entry) //nolint:errcheck
 	}
 }
 
