@@ -36,5 +36,5 @@ type Request struct {
 type Item interface {
 	Add(request Request) Response
 	Del(request Request) Response
-	Query(request Request) Response
+	Get(request Request) Response
 }

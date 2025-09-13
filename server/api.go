@@ -82,7 +82,7 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
 	case "DELETE":
 		response = item.Del(request)
 	case "GET":
-		response = item.Query(request)
+		response = item.Get(request)
 	default:
 		http.Error(w, "please use put/del/get", http.StatusMethodNotAllowed) // to response
 		return

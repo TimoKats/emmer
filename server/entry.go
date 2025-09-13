@@ -54,7 +54,7 @@ func (EntryItem) Add(request Request) Response {
 }
 
 // query for an entry in a table. Returns query result.
-func (EntryItem) Query(request Request) Response {
+func (EntryItem) Get(request Request) Response {
 	log.Printf("querying table %s", request.Table)
 	// check if json exists
 	if _, err := config.fs.Fetch(request.Table); err != nil {

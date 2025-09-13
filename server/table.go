@@ -28,7 +28,7 @@ func (TableItem) Add(request Request) Response {
 }
 
 // queries tables (so not table contents)
-func (TableItem) Query(request Request) Response {
+func (TableItem) Get(request Request) Response {
 	log.Printf("querying table meta-data: %s", request.Table)
 	// fetch all tables
 	result := make(map[string]any)
