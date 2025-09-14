@@ -43,7 +43,7 @@ func (TableItem) Get(request Request) Response {
 		}
 	}
 	// handle not found error
-	if len(result) == 0 {
+	if len(result) == 0 && request.Table != "" {
 		err = errors.New("table " + request.Table + " not found")
 	}
 	return Response{Data: result, Error: err}
