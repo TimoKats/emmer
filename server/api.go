@@ -46,7 +46,11 @@ func parseRequest(r *http.Request) (Request, error) {
 func parseResponse(w http.ResponseWriter, response Response) error {
 	if response.Error != nil {
 		w.Header().Set("Content-Type", "text/plain")
-		w.WriteHeader(500)
+		if strings.Contains(response.Error.Error(), "not found") {
+			w.WriteHeader(404)
+		} else {
+			w.WriteHeader(500)
+		}
 		return json.NewEncoder(w).Encode(response.Error.Error())
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -59,10 +63,7 @@ func selectItem(request Request) (Item, error) {
 	if len(request.Key) > 0 {
 		return EntryItem{}, nil
 	}
-	if len(request.Table) > 0 {
-		return TableItem{}, nil
-	}
-	return nil, errors.New("no table / key provided")
+	return TableItem{}, nil
 }
 
 // helper function that selects the interface based on the URL path
@@ -82,7 +83,7 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
 	case "DELETE":
 		response = item.Del(request)
 	case "GET":
-		response = item.Query(request)
+		response = item.Get(request)
 	default:
 		http.Error(w, "please use put/del/get", http.StatusMethodNotAllowed) // to response
 		return

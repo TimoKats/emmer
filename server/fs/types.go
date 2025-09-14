@@ -9,7 +9,7 @@ package server
 type FileSystem interface {
 	Fetch(filename string) (string, error)
 	DeleteFile(filename string) error
-	List() (map[string]any, error)
+	List() ([]string, error)
 	Info() string
 
 	CreateJSON(filename string, value any) error
