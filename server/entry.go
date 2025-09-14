@@ -54,7 +54,7 @@ func (EntryItem) Add(request Request) Response {
 	// if it doesn't exist, create it. still errors? return error.
 	if _, err := config.fs.Fetch(request.Table); err != nil {
 		if config.autoTable {
-			err = config.fs.CreateJSON(request.Table, request.Value)
+			err = config.fs.CreateJSON(request.Table, nil)
 		}
 		if err != nil {
 			return Response{Data: nil, Error: err}
