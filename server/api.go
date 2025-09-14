@@ -46,7 +46,11 @@ func parseRequest(r *http.Request) (Request, error) {
 func parseResponse(w http.ResponseWriter, response Response) error {
 	if response.Error != nil {
 		w.Header().Set("Content-Type", "text/plain")
-		w.WriteHeader(500)
+		if strings.Contains(response.Error.Error(), "not found") {
+			w.WriteHeader(404)
+		} else {
+			w.WriteHeader(500)
+		}
 		return json.NewEncoder(w).Encode(response.Error.Error())
 	}
 	w.Header().Set("Content-Type", "application/json")

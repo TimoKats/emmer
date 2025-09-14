@@ -3,25 +3,37 @@ package server
 import (
 	"errors"
 	"log"
+	"strconv"
 )
 
 type EntryItem struct{}
 
 // used to query on multi-keys. E.g. [1,2,3] returns map[1,2,3] > value
 func findKey(data map[string]any, key []string) (any, error) {
+	var current any = data
 	if len(key) == 0 || key[0] == "" {
 		return data, nil
 	}
-	current := data
 	for _, step := range key {
-		match, ok := current[step].(map[string]any)
-		if !ok {
-			if _, ok := current[step]; !ok {
-				return make(map[string]any), errors.New(step + " not found")
+		switch typed := current.(type) {
+		case map[string]any:
+			val, ok := typed[step]
+			if !ok {
+				return nil, errors.New("key '" + step + "' not found in map")
 			}
-			return current[step], nil
+			current = val
+		case []any:
+			index, err := strconv.Atoi(step)
+			if err != nil {
+				return nil, errors.New("invalid index '" + step + "' for list")
+			}
+			if index < 0 || index >= len(typed) {
+				return nil, errors.New("index '" + step + "' out of bounds")
+			}
+			current = typed[index]
+		default:
+			return nil, errors.New("cannot descend into type")
 		}
-		current = match
 	}
 	return current, nil
 }
