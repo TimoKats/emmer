@@ -14,4 +14,4 @@ foo@bar:~$ emmer
 2025/09/10 16:41:20 server is running on http://localhost:8080
 ```
 
-**The complete documentation can be found on [my website](https://timokats.xyz/pages/emmer.php).**
+**The complete documentation can be found on [my website](https://timokats.xyz/pages/emmer.php). I also have a demo on [YouTube](https://youtu.be/zKRrvn2947M)**
