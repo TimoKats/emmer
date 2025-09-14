@@ -31,16 +31,20 @@ func (TableItem) Add(request Request) Response {
 func (TableItem) Get(request Request) Response {
 	log.Printf("querying table meta-data: %s", request.Table)
 	// fetch all tables
-	result := make(map[string]any)
+	result := []string{}
 	files, err := config.fs.List()
 	if err != nil {
 		return Response{Data: nil, Error: err}
 	}
 	// iterate over json files (have to do type assertion because it's any)
-	for filename, contents := range files {
-		if request.Table+".json" == filename {
-			result[filename] = contents
+	for _, filename := range files {
+		if request.Table+".json" == filename || request.Table == "" {
+			result = append(result, filename)
 		}
+	}
+	// handle not found error
+	if len(result) == 0 {
+		err = errors.New("table " + request.Table + " not found")
 	}
 	return Response{Data: result, Error: err}
 }

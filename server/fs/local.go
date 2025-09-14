@@ -3,11 +3,9 @@ package server
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
-	"time"
 )
 
 type LocalFS struct {
@@ -43,7 +41,7 @@ func (io LocalFS) ReadJSON(filename string) (map[string]any, error) {
 	path := io.getPath(filename)
 	file, err := os.ReadFile(path)
 	if err != nil {
-		return data, err
+		return data, errors.New("table " + filename + " not found")
 	}
 	// put raw data into map object
 	err = json.Unmarshal(file, &data)
@@ -108,25 +106,17 @@ func (io LocalFS) DeleteFile(filename string) error {
 }
 
 // list json files in io folder, along with some statistics
-func (io LocalFS) List() (map[string]any, error) {
+func (io LocalFS) List() ([]string, error) {
 	// get all files in io folder
 	files, err := os.ReadDir(io.Folder)
-	result := make(map[string]any)
+	result := []string{}
 	if err != nil {
 		return result, err
 	}
 	// iterate over json files
 	for _, f := range files {
 		if filepath.Ext(f.Name()) == ".json" {
-			info, err := f.Info()
-			if err != nil {
-				log.Printf("skipping %s due to read error", f.Name())
-				continue
-			}
-			result[f.Name()] = map[string]any{
-				"size":     fmt.Sprintf("%.2f KB", float64(info.Size())/1024),
-				"last mod": info.ModTime().Format(time.RFC822),
-			}
+			result = append(result, f.Name())
 		}
 	}
 	return result, nil

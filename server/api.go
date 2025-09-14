@@ -63,7 +63,7 @@ func selectItem(request Request) (Item, error) {
 	if len(request.Key) > 0 {
 		return EntryItem{}, nil
 	}
-	if len(request.Table) > 0 {
+	if len(request.Table) >= 0 {
 		return TableItem{}, nil
 	}
 	return nil, errors.New("no table / key provided")

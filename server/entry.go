@@ -19,16 +19,16 @@ func findKey(data map[string]any, key []string) (any, error) {
 		case map[string]any:
 			val, ok := typed[step]
 			if !ok {
-				return nil, errors.New("key '" + step + "' not found in map")
+				return nil, errors.New("key " + step + " not found in map")
 			}
 			current = val
 		case []any:
 			index, err := strconv.Atoi(step)
 			if err != nil {
-				return nil, errors.New("invalid index '" + step + "' for list")
+				return nil, errors.New("invalid index " + step + " for list")
 			}
 			if index < 0 || index >= len(typed) {
-				return nil, errors.New("index '" + step + "' out of bounds")
+				return nil, errors.New("index " + step + " out of bounds")
 			}
 			current = typed[index]
 		default:
@@ -68,10 +68,6 @@ func (EntryItem) Add(request Request) Response {
 // query for an entry in a table. Returns query result.
 func (EntryItem) Get(request Request) Response {
 	log.Printf("querying table %s", request.Table)
-	// check if json exists
-	if _, err := config.fs.Fetch(request.Table); err != nil {
-		return Response{Data: nil, Error: err}
-	}
 	// get complete json data
 	data, err := config.fs.ReadJSON(request.Table)
 	if err != nil {
