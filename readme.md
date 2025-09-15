@@ -3,7 +3,7 @@
 [![Tests](https://github.com/TimoKats/emmer/actions/workflows/test.yaml/badge.svg)](https://github.com/TimoKats/emmer/actions/workflows/test.yaml)
 [![License: EUPL](https://img.shields.io/badge/license-EUPL-blue.svg)](https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12)
 
-An API for creating and querying JSON data on different filesystems (local, S3, azure blob, ...). You can install emmer with the command below. After that, you can run `emmer` to start adding/querying data using the API.
+An API for creating and querying JSON data on different filesystems (local, S3, azure blob, ...). Optimized for simplicity and interoperabillity. You can install emmer with the command below. After that, you can run `emmer` to start adding/querying data using the API.
 
 ```console
 foo@bar:~$ go install github.com/TimoKats/emmer@latest
