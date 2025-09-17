@@ -14,7 +14,7 @@ foo@bar:~$ emmer
 2025/09/10 16:41:20 server is running on http://localhost:8080
 ```
 
-The API is based on your JSON structure. So the example below is for CRUD-ing `[key1][key2]` in `file.json`. Moreover, there are helper functions for appending and incrementing values. 
+The API is based on your JSON structure. So the example below is for CRUD-ing `[key1][key2]` in `file.json`. The value (which can be anything) is then added to the body of the request. Moreover, there are helper functions for appending and incrementing values. 
 
 ```
 DELETE/PUT/GET: /api/file/key1/key2/...
