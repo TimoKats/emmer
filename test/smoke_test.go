@@ -1,6 +1,10 @@
 package main
 
 import (
+	"path/filepath"
+
+	server "github.com/TimoKats/emmer/server"
+
 	"bytes"
 	"encoding/json"
 	"log"
@@ -17,8 +21,19 @@ type RequestConfig struct {
 	ExpectedStatus int
 }
 
+func serve() {
+	// api
+	http.HandleFunc("/logs", server.LogsHandler)
+	http.HandleFunc("/ping", server.PingHandler)
+	http.HandleFunc("/api/", server.ApiHandler)
+
+	// start the server
+	log.Println("server is running on http://localhost:8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
 // send http request and returns the status code and error
-func SendRequest(cfg RequestConfig) int {
+func request(cfg RequestConfig) int {
 	// format request from object
 	req, err := http.NewRequest(cfg.Method, "http://localhost:8080"+cfg.Endpoint, bytes.NewBuffer([]byte(cfg.Body)))
 	if err != nil {
@@ -38,7 +53,7 @@ func SendRequest(cfg RequestConfig) int {
 }
 
 // read json file at test location
-func ReadJSON(filename string) map[string]any {
+func readJson(filename string) map[string]any {
 	// get raw data
 	data := make(map[string]any)
 	file, err := os.ReadFile(filename)
@@ -51,27 +66,28 @@ func ReadJSON(filename string) map[string]any {
 }
 
 // test if two maps are equal (loosly/stringified)
-func JEqual(a, b any) bool {
+func jsonEqual(a, b any) bool {
 	aByte, _ := json.Marshal(a) //nolint:errcheck
 	bByte, _ := json.Marshal(b) //nolint:errcheck
 	return string(aByte) == string(bByte)
 }
 
-// get location of test file
-func GetTestFile() string {
-	dirname, err := os.UserHomeDir()
-	if err != nil {
-		log.Panic("can't setup emmer folder")
+// create path to test file
+func testFile() string {
+	var folder string
+	if folder = os.Getenv("EM_FOLDER"); folder == "" {
+		folder = filepath.Join(os.Getenv("HOME"), ".local", "share", "emmer")
 	}
-	return dirname + "/.emmer/test.json"
+	return filepath.Join(folder, "test.json")
 }
 
 func TestApi(t *testing.T) {
 	// start server
 	go serve()
 	time.Sleep(500 * time.Millisecond)
+
 	// setup tests, files, etc
-	testFile := GetTestFile()
+	testFile := testFile()
 	tests := []RequestConfig{
 		{"PUT", "/api/test", `{"timo":1}`, http.StatusOK},
 		{"PUT", "/api/test/pipo", `5`, http.StatusOK},
@@ -82,15 +98,16 @@ func TestApi(t *testing.T) {
 		{"timo": 1, "pipo": 5},
 		nil,
 	}
+
 	// run tests
 	for index, test := range tests {
-		StatusCode := SendRequest(test)
+		StatusCode := request(test)
 		if StatusCode != test.ExpectedStatus {
 			t.Errorf("Expected status %d, got %d", test.ExpectedStatus, StatusCode)
 		}
 		if expectedData[index] != nil {
-			result := ReadJSON(testFile)
-			if !JEqual(expectedData[index], result) {
+			result := readJson(testFile)
+			if !jsonEqual(expectedData[index], result) {
 				t.Errorf("Expected result %s, got %s", expectedData[index], result)
 			}
 		}

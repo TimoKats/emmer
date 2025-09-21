@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 type LocalFS struct {
@@ -15,6 +16,26 @@ type LocalFS struct {
 // takes filename and returns full path + extension to json file
 func (io LocalFS) getPath(filename string) string {
 	return filepath.Join(io.Folder, filename) + ".json"
+}
+
+// selects folder based on OS and env variables of the user
+func selectFolder() string {
+	// user select
+	if folder := os.Getenv("EM_FOLDER"); folder != "" {
+		return folder
+	}
+	// defaults
+	if runtime.GOOS == "windows" {
+		// Use %AppData% on Windows
+		return filepath.Join(os.Getenv("AppData"), "emmer")
+	} else {
+		// Use XDG_DATA_HOME on linux (if exists)
+		xdgData := os.Getenv("XDG_DATA_HOME")
+		if xdgData == "" {
+			return filepath.Join(os.Getenv("HOME"), ".local", "share", "emmer")
+		}
+		return filepath.Join(xdgData, "emmer")
+	}
 }
 
 // creates empty (or prefilled) JSON file at path
@@ -129,15 +150,7 @@ func (io LocalFS) Info() string {
 
 // creates new localFS instance with settings applied
 func SetupLocal() *LocalFS {
-	folder := os.Getenv("EM_FOLDER")
-	// default value is ~/.emmer
-	if folder == "" {
-		dirname, err := os.UserHomeDir()
-		if err != nil {
-			log.Panic("can't setup emmer folder")
-		}
-		folder = dirname + "/.emmer"
-	}
+	folder := selectFolder()
 	// create selected folder if it doesn't exist
 	if _, err := os.Stat(folder); os.IsNotExist(err) {
 		log.Printf("created folder: %s", folder)
