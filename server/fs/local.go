@@ -2,11 +2,11 @@ package server
 
 import (
 	"encoding/json"
-	"runtime"
 	"errors"
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 type LocalFS struct {
@@ -132,18 +132,19 @@ func (io LocalFS) Info() string {
 func SetupLocal() *LocalFS {
 	folder := os.Getenv("EM_FOLDER")
 	if folder == "" {
+		var baseFolder string
 		if runtime.GOOS == "windows" {
 			// Use %AppData% on Windows
-			folder = os.Getenv("AppData")
+			baseFolder = os.Getenv("AppData")
 		} else {
-			// Use XDG_DATA_HOME or fallback to ~/.emmer/
-			folder = os.Getenv("XDG_DATA_HOME")
+			// Use XDG_DATA_HOME on linux
+			baseFolder = os.Getenv("XDG_DATA_HOME")
 		}
 		if folder == "" {
 			// if nothing is found, just use home
-			folder = os.Getenv("HOME")
+			baseFolder = os.Getenv("HOME")
 		}
-		folder = filepath.Join(folder, "emmer")
+		folder = filepath.Join(baseFolder, "emmer")
 	}
 	// create selected folder if it doesn't exist
 	if _, err := os.Stat(folder); os.IsNotExist(err) {
