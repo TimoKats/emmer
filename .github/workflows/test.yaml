@@ -27,3 +27,5 @@ jobs:
           go-version: '1.22'
       - name: smoke tests
         run: go test ./test/...
+        env:
+          EM_FOLDER: /home/runner/emmer/
