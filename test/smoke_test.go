@@ -72,13 +72,22 @@ func jsonEqual(a, b any) bool {
 	return string(aByte) == string(bByte)
 }
 
+// create path to test file
+func testFile() string {
+	var folder string
+	if folder = os.Getenv("EM_FOLDER"); folder == "" {
+		folder = filepath.Join(os.Getenv("HOME"), ".local", "share", "emmer")
+	}
+	return filepath.Join(folder, "test.json")
+}
+
 func TestApi(t *testing.T) {
 	// start server
 	go serve()
 	time.Sleep(500 * time.Millisecond)
 
 	// setup tests, files, etc
-	testFile := filepath.Join(os.Getenv("HOME"), ".local", "share", "emmer", "test.json")
+	testFile := testFile()
 	tests := []RequestConfig{
 		{"PUT", "/api/test", `{"timo":1}`, http.StatusOK},
 		{"PUT", "/api/test/pipo", `5`, http.StatusOK},
