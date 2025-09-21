@@ -1,6 +1,8 @@
 package main
 
 import (
+	"path/filepath"
+
 	server "github.com/TimoKats/emmer/server"
 
 	"bytes"
@@ -70,21 +72,13 @@ func jsonEqual(a, b any) bool {
 	return string(aByte) == string(bByte)
 }
 
-// get location of test file
-func getTestFile() string {
-	dirname, err := os.UserHomeDir()
-	if err != nil {
-		log.Panic("can't setup emmer folder")
-	}
-	return dirname + "/emmer/test.json"
-}
-
 func TestApi(t *testing.T) {
 	// start server
 	go serve()
 	time.Sleep(500 * time.Millisecond)
+
 	// setup tests, files, etc
-	testFile := getTestFile()
+	testFile := filepath.Join(os.Getenv("HOME"), ".local", "share", "emmer", "test.json")
 	tests := []RequestConfig{
 		{"PUT", "/api/test", `{"timo":1}`, http.StatusOK},
 		{"PUT", "/api/test/pipo", `5`, http.StatusOK},
@@ -95,6 +89,7 @@ func TestApi(t *testing.T) {
 		{"timo": 1, "pipo": 5},
 		nil,
 	}
+
 	// run tests
 	for index, test := range tests {
 		StatusCode := request(test)

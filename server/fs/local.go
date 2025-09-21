@@ -141,8 +141,8 @@ func SetupLocal() *LocalFS {
 			baseFolder = os.Getenv("XDG_DATA_HOME")
 		}
 		if folder == "" {
-			// if nothing is found, just use home
-			baseFolder = os.Getenv("HOME")
+			// if nothing is found, just use ~/.local/share
+			baseFolder = filepath.Join(os.Getenv("HOME"), ".local", "share")
 		}
 		folder = filepath.Join(baseFolder, "emmer")
 	}
