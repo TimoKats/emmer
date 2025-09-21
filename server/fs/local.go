@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"runtime"
 	"errors"
 	"log"
 	"os"
@@ -130,13 +131,19 @@ func (io LocalFS) Info() string {
 // creates new localFS instance with settings applied
 func SetupLocal() *LocalFS {
 	folder := os.Getenv("EM_FOLDER")
-	// default value is ~/.emmer
 	if folder == "" {
-		dirname, err := os.UserHomeDir()
-		if err != nil {
-			log.Panic("can't setup emmer folder")
+		if runtime.GOOS == "windows" {
+			// Use %AppData% on Windows
+			folder = os.Getenv("AppData")
+		} else {
+			// Use XDG_DATA_HOME or fallback to ~/.emmer/
+			folder = os.Getenv("XDG_DATA_HOME")
 		}
-		folder = dirname + "/.emmer"
+		if folder == "" {
+			// if nothing is found, just use home
+			folder = os.Getenv("HOME")
+		}
+		folder = filepath.Join(folder, "emmer")
 	}
 	// create selected folder if it doesn't exist
 	if _, err := os.Stat(folder); os.IsNotExist(err) {
