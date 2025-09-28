@@ -3,7 +3,7 @@
 [![Tests](https://github.com/TimoKats/emmer/actions/workflows/test.yaml/badge.svg)](https://github.com/TimoKats/emmer/actions/workflows/test.yaml)
 [![License: EUPL](https://img.shields.io/badge/license-EUPL-blue.svg)](https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12)
 
-As self-hosted API for CRUD-ing JSON data on different filesystems (local, S3, azure blob, ...). Optimized for simplicity and interoperabillity. Perfect for small personal projects. You can install emmer with the command below. After that, you can run `emmer` to start.
+As self-hosted API for CRUD-ing JSON data on different filesystems (local, S3, azure blob, ...). Optimized for simplicity and interoperabillity. Perfect for data storage in small personal projects, or simply mocking an API for development. You can install emmer with the command below. After that, you can run `emmer` to start.
 
 ```console
 foo@bar:~$ go install github.com/TimoKats/emmer@latest
