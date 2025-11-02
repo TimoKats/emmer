@@ -65,3 +65,23 @@ In this example, we will use emmer to create a small database for blogs and comm
 ```
 
 </details>
+
+<details>
+<summary>Docs</summary>
+<hr />
+
+<b>URL Parameters</b>
+- mode: increment. If you access a numeric value, adding increment parameter will increase it by 1. Note, if you put a numeric value in your body (-1, 2, etc) then that's added to the numeric value instead.
+- mode: append. Using the append mode, you can append objects (that you put in your request body) to a json list. Note, if the json key doesn't exist (or is not a list), this mode will do that conversion automatically.
+
+<b>Environment variables</b>
+- EM_AUTOTABLE: Set to false if you DON'T want to automatically create a new file when adding an entry.
+- EM_USERNAME: Username of basic auth for API. Auto generated if empty.
+- EM_PASSWORD: Password of basic auth for API. Auto generated if empty
+- EM_FILESYSTEM: Local, AWS, etc. Not useful now, since I've only implemented local.
+- EM_FOLDER: When using local FS, this sets the folder emmer writes files to. Default: $HOME/.local/share/emmer (or XDG_DATA_HOME) (AppData on Windows).
+
+<b>Flags</b>
+- -p: sets the port to run on. Default is 8080.
+  
+</details>
