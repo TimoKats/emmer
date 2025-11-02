@@ -20,4 +20,48 @@ The API is based on your JSON structure. So the example below is for CRUD-ing `[
 DELETE/PUT/GET: /api/file/key1/key2/...
 ```
 
-The complete documentation can be found on [my website](https://timokats.xyz/pages/emmer.php). I also have a demo on [YouTube](https://youtu.be/zKRrvn2947M)
+<details>
+<summary>Examples</summary>
+<hr />
+
+In this example, we will use emmer to create a small database for blogs and comments. Note, username/password for (required) basic auth is generated on startup, or set environment variables.
+
+1: Do a PUT request to <code>/api/posts</code> with body shown below to create a json file we can start with.
+
+```json
+{
+  "post1": {"text": "Here I write my article"}
+}
+```
+
+2: Query your json file with GET requests. For example, sending a GET request to <code>/api/posts/article1/text</code> will return the text field of post1.
+
+```json
+"Here I write my article"
+```
+
+3: Continously add comments to our posts. This would probably be a list of "comment" objects. Emmer handles this by adding the "append" parameter to our PUT request. For example, the comment (shown below) is sent to <code>/api/posts/post1/comments?mode=increment</code>.
+
+```json
+{"comment": "great stuff", "username": "timo"}
+```
+
+4: Do a GET request to <code>/api/posts/post1/comments</code>/ to fetch all comments. Note, you can do the PUT request from step 3 again to keep adding comments to your article.
+
+```json
+[{"comment": "great stuff", "username": "timo"}]
+```
+
+5: Send a DELETE request to <code>/api/posts</code> to delete the json file. This complete json file should look (something) like this:
+
+```json
+{
+    "post1": {
+        "comments": [{"comment": "not great stuff", "username": "tomi"}, {"comment": "great stuff", "username": "timo"}],
+        "text": "Here I write my article"
+    }
+}
+
+```
+
+</details>
