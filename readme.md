@@ -30,7 +30,7 @@ In this example, we will use emmer to create a small database for blogs and comm
 
 ```json
 {
-  "post1": {"text": "Here I write my article"}
+  "article1": {"text": "Here I write my article"}
 }
 ```
 
