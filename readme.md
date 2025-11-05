@@ -40,13 +40,13 @@ In this example, we will use emmer to create a small database for blogs and comm
 "Here I write my article"
 ```
 
-3: Continously add comments to our posts. This would probably be a list of "comment" objects. Emmer handles this by adding the "append" parameter to our PUT request. For example, the comment (shown below) is sent to <code>/api/posts/post1/comments?mode=append</code>.
+3: Continously add comments to our posts. This would probably be a list of "comment" objects. Emmer handles this by adding the "append" parameter to our PUT request. For example, the comment (shown below) is sent to <code>/api/posts/article1/comments?mode=append</code>.
 
 ```json
 {"comment": "great stuff", "username": "timo"}
 ```
 
-4: Do a GET request to <code>/api/posts/post1/comments</code>/ to fetch all comments. Note, you can do the PUT request from step 3 again to keep adding comments to your article.
+4: Do a GET request to <code>/api/posts/article1/comments</code>/ to fetch all comments. Note, you can do the PUT request from step 3 again to keep adding comments to your article.
 
 ```json
 [{"comment": "great stuff", "username": "timo"}]
