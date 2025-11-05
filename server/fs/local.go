@@ -70,45 +70,45 @@ func (io LocalFS) ReadJSON(filename string) (map[string]any, error) {
 }
 
 // reads JSON file, updates key/value pair, writes to fs
-func (io LocalFS) UpdateJSON(filename string, key []string, value any, mode string) error {
+func (io LocalFS) UpdateJSON(filename string, key []string, value any, mode string) (map[string]any, error) {
 	// get json data
 	path := io.getPath(filename)
 	data, err := io.ReadJSON(filename)
 	if err != nil {
-		return err
+		return data, err
 	}
 	// update json data
 	err = insertNested(data, key, value, mode)
 	if err != nil {
-		return err
+		return data, err
 	}
 	// write json data to file
 	bytes, err := json.Marshal(data)
 	if err != nil {
-		return err
+		return data, err
 	}
-	return os.WriteFile(path, bytes, 0644)
+	return data, os.WriteFile(path, bytes, 0644)
 }
 
 // removes key from json file, writes to fs
-func (io LocalFS) DeleteJSON(filename string, key []string) error {
+func (io LocalFS) DeleteJSON(filename string, key []string) (map[string]any, error) {
 	// get json data
 	path := io.getPath(filename)
 	data, err := io.ReadJSON(filename)
 	if err != nil {
-		return err
+		return data, err
 	}
 	// update json data
 	err = deleteNested(data, key)
 	if err != nil {
-		return err
+		return data, err
 	}
 	// write json data to file
 	bytes, err := json.Marshal(data)
 	if err != nil {
-		return err
+		return data, err
 	}
-	return os.WriteFile(path, bytes, 0644)
+	return data, os.WriteFile(path, bytes, 0644)
 }
 
 // gets path based on table/file name. Returns error if not found

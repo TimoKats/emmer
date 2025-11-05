@@ -6,6 +6,8 @@ import (
 	emmerFs "github.com/TimoKats/emmer/server/fs"
 )
 
+// session
+
 type LogBuffer struct {
 	mu    sync.Mutex
 	logs  []string
@@ -13,12 +15,23 @@ type LogBuffer struct {
 }
 
 type Config struct {
-	logBuffer *LogBuffer
 	autoTable bool
 	username  string
 	password  string
-	fs        emmerFs.FileSystem
 }
+
+type Cache struct {
+	data map[string]map[string]any
+}
+
+type Session struct {
+	config    Config
+	fs        emmerFs.FileSystem
+	logBuffer *LogBuffer
+	cache     Cache
+}
+
+// api
 
 type Response struct {
 	Error error

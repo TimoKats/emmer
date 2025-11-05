@@ -14,6 +14,6 @@ type FileSystem interface {
 
 	CreateJSON(filename string, value any) error
 	ReadJSON(filename string) (map[string]any, error)
-	UpdateJSON(filename string, key []string, value any, mode string) error
-	DeleteJSON(filename string, key []string) error
+	UpdateJSON(filename string, key []string, value any, mode string) (map[string]any, error)
+	DeleteJSON(filename string, key []string) (map[string]any, error)
 }

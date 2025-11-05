@@ -16,7 +16,7 @@ import (
 	"os"
 )
 
-var config Config
+var session Session
 
 // get HTTP request and format it into Request object used by server
 func parseRequest(r *http.Request) (Request, error) {
@@ -102,7 +102,7 @@ func PingHandler(w http.ResponseWriter, r *http.Request) {
 
 // shows last n (20) logs from server
 func LogsHandler(w http.ResponseWriter, r *http.Request) {
-	for _, entry := range config.logBuffer.GetLogs() {
+	for _, entry := range session.logBuffer.GetLogs() {
 		fmt.Fprint(w, entry) //nolint:errcheck
 	}
 }
@@ -111,7 +111,7 @@ func LogsHandler(w http.ResponseWriter, r *http.Request) {
 func Auth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user, pass, ok := r.BasicAuth()
-		if !ok || user != config.username || pass != config.password {
+		if !ok || user != session.config.username || pass != session.config.password {
 			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
@@ -139,11 +139,12 @@ func init() {
 	buffer := NewLogBuffer(20)
 	log.SetOutput(io.MultiWriter(os.Stdout, buffer))
 	// create config object
-	config = Config{
-		logBuffer: buffer,
+	session.config = Config{
 		autoTable: os.Getenv("EM_AUTOTABLE") != "false",
 		username:  username,
 		password:  password,
-		fs:        emmerFs.SetupLocal(),
 	}
+	session.logBuffer = buffer
+	session.cache.data = make(map[string]map[string]any)
+	session.fs = emmerFs.SetupLocal()
 }

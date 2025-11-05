@@ -41,10 +41,15 @@ func findKey(data map[string]any, key []string) (any, error) {
 // fetches path for table name, then removes key from JSON.
 func (EntryItem) Del(request Request) Response {
 	log.Printf("deleting key %s in %v", request.Key, request.Table)
-	if _, err := config.fs.Fetch(request.Table); err != nil {
+	// check if table exists
+	if _, err := session.fs.Fetch(request.Table); err != nil {
 		return Response{Data: nil, Error: err}
 	}
-	err := config.fs.DeleteJSON(request.Table, request.Key)
+	// update json, update cache
+	data, err := session.fs.DeleteJSON(request.Table, request.Key)
+	if err == nil {
+		session.cache.data[request.Table] = data
+	}
 	return Response{Data: "deleted key in " + request.Table, Error: err}
 }
 
@@ -52,28 +57,38 @@ func (EntryItem) Del(request Request) Response {
 func (EntryItem) Add(request Request) Response {
 	log.Printf("adding value for %s in table %s", request.Key, request.Table)
 	// if it doesn't exist, create it. still errors? return error.
-	if _, err := config.fs.Fetch(request.Table); err != nil {
-		if config.autoTable {
-			err = config.fs.CreateJSON(request.Table, nil)
+	if _, err := session.fs.Fetch(request.Table); err != nil {
+		if session.config.autoTable {
+			err = session.fs.CreateJSON(request.Table, nil)
 		}
 		if err != nil {
 			return Response{Data: nil, Error: err}
 		}
 	}
-	// update json file with new values
-	err := config.fs.UpdateJSON(request.Table, request.Key, request.Value, request.Mode)
+	// update json, and update cache
+	data, err := session.fs.UpdateJSON(request.Table, request.Key, request.Value, request.Mode)
+	if err == nil {
+		session.cache.data[request.Table] = data
+	}
 	return Response{Data: "added key in " + request.Table, Error: err}
 }
 
-// query for an entry in a table. Returns query result.
+// query for an entry in a table. Returns query result (and updates cache).
 func (EntryItem) Get(request Request) Response {
 	log.Printf("querying table %s", request.Table)
-	// get complete json data
-	data, err := config.fs.ReadJSON(request.Table)
+	// read from cache
+	if _, ok := session.cache.data[request.Table]; ok {
+		log.Printf("reading %s from cache", request.Table)
+		data := session.cache.data[request.Table]
+		result, err := findKey(data, request.Key)
+		return Response{Data: result, Error: err}
+	}
+	// read from fs
+	data, err := session.fs.ReadJSON(request.Table)
 	if err != nil {
 		return Response{Data: nil, Error: err}
 	}
-	// filter json data
+	session.cache.data[request.Table] = data
 	result, err := findKey(data, request.Key)
 	return Response{Data: result, Error: err}
 }
