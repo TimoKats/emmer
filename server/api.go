@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"strconv"
 	"strings"
 
 	emmerFs "github.com/TimoKats/emmer/server/fs"
@@ -135,6 +136,17 @@ func init() {
 		password = base64.URLEncoding.EncodeToString(b)
 		log.Printf("set password to: %s", password)
 	}
+	// cache settings
+	commit := 0
+	commitEnv := os.Getenv("EM_COMMIT")
+	if commitEnv != "" {
+		commitInt, err := strconv.Atoi(commitEnv)
+		if err != nil {
+			fmt.Printf("Error converting commit strategy to int: %v", err)
+			return
+		}
+		commit = commitInt
+	}
 	// logs settings
 	buffer := NewLogBuffer(20)
 	log.SetOutput(io.MultiWriter(os.Stdout, buffer))
@@ -143,8 +155,10 @@ func init() {
 		autoTable: os.Getenv("EM_AUTOTABLE") != "false",
 		username:  username,
 		password:  password,
+		commit:    commit,
 	}
 	session.logBuffer = buffer
 	session.cache.data = make(map[string]map[string]any)
 	session.fs = emmerFs.SetupLocal()
+	session.commits = 1
 }

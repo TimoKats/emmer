@@ -3,7 +3,30 @@ package server
 import (
 	"errors"
 	"log"
+	"strconv"
 )
+
+// NEW -
+func read(filename string) (map[string]any, error) { // to utils
+	if data, ok := session.cache.data[filename]; ok {
+		return data, nil
+	}
+	return session.fs.Get(filename)
+}
+
+// NEW -
+func write(request Request, data map[string]any) error {
+	session.cache.data[request.Table] = data
+	if session.config.commit%session.commits == 0 {
+		err := session.fs.Put(request.Table, data)
+		if err != nil {
+			return err
+		}
+		session.commits = 0
+	}
+	session.commits += 1
+	return nil
+}
 
 // creates new value based on parameter and mode (add error return)
 func updateValue(current any, new any, mode string) any {
@@ -16,7 +39,6 @@ func updateValue(current any, new any, mode string) any {
 			return []any{new}
 		}
 		return append([]any{current}, new)
-
 	case "increment":
 		// if it's an increment, either increase, or replace.
 		if new == nil {
@@ -77,4 +99,34 @@ func deleteNested(data map[string]any, key []string) error {
 		return nil
 	}
 	return errors.New("key not found in table")
+}
+
+// used to query on multi-keys. E.g. [1,2,3] returns map[1,2,3] > value
+func findKey(data map[string]any, key []string) (any, error) {
+	var current any = data
+	if len(key) == 0 || key[0] == "" {
+		return data, nil
+	}
+	for _, step := range key {
+		switch typed := current.(type) {
+		case map[string]any:
+			val, ok := typed[step]
+			if !ok {
+				return nil, errors.New("key " + step + " not found in map")
+			}
+			current = val
+		case []any:
+			index, err := strconv.Atoi(step)
+			if err != nil {
+				return nil, errors.New("invalid index " + step + " for list")
+			}
+			if index < 0 || index >= len(typed) {
+				return nil, errors.New("index " + step + " out of bounds")
+			}
+			current = typed[index]
+		default:
+			return nil, errors.New("cannot descend into type")
+		}
+	}
+	return current, nil
 }

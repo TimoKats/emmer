@@ -39,7 +39,7 @@ func selectFolder() string {
 }
 
 // creates empty (or prefilled) JSON file at path
-func (io LocalFS) CreateJSON(filename string, value any) error {
+func (io LocalFS) Put(filename string, value any) error {
 	path := io.getPath(filename)
 	f, err := os.Create(path)
 	if err != nil {
@@ -56,7 +56,7 @@ func (io LocalFS) CreateJSON(filename string, value any) error {
 }
 
 // reads JSON file into map[string]any variable
-func (io LocalFS) ReadJSON(filename string) (map[string]any, error) {
+func (io LocalFS) Get(filename string) (map[string]any, error) {
 	// get raw data
 	data := make(map[string]any)
 	path := io.getPath(filename)
@@ -69,59 +69,8 @@ func (io LocalFS) ReadJSON(filename string) (map[string]any, error) {
 	return data, err
 }
 
-// reads JSON file, updates key/value pair, writes to fs
-func (io LocalFS) UpdateJSON(filename string, key []string, value any, mode string) (map[string]any, error) {
-	// get json data
-	path := io.getPath(filename)
-	data, err := io.ReadJSON(filename)
-	if err != nil {
-		return data, err
-	}
-	// update json data
-	err = insertNested(data, key, value, mode)
-	if err != nil {
-		return data, err
-	}
-	// write json data to file
-	bytes, err := json.Marshal(data)
-	if err != nil {
-		return data, err
-	}
-	return data, os.WriteFile(path, bytes, 0644)
-}
-
-// removes key from json file, writes to fs
-func (io LocalFS) DeleteJSON(filename string, key []string) (map[string]any, error) {
-	// get json data
-	path := io.getPath(filename)
-	data, err := io.ReadJSON(filename)
-	if err != nil {
-		return data, err
-	}
-	// update json data
-	err = deleteNested(data, key)
-	if err != nil {
-		return data, err
-	}
-	// write json data to file
-	bytes, err := json.Marshal(data)
-	if err != nil {
-		return data, err
-	}
-	return data, os.WriteFile(path, bytes, 0644)
-}
-
-// gets path based on table/file name. Returns error if not found
-func (io LocalFS) Fetch(filename string) (string, error) {
-	path := io.getPath(filename)
-	if _, err := os.Stat(path); err != nil {
-		return path, errors.New("table " + filename + " not found")
-	}
-	return path, nil
-}
-
 // removes entire JSON file
-func (io LocalFS) DeleteFile(filename string) error {
+func (io LocalFS) Del(filename string) error {
 	path := io.getPath(filename)
 	return os.Remove(path)
 }

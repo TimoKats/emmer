@@ -18,6 +18,7 @@ type Config struct {
 	autoTable bool
 	username  string
 	password  string
+	commit    int
 }
 
 type Cache struct {
@@ -26,6 +27,7 @@ type Cache struct {
 }
 
 type Session struct {
+	commits   int
 	config    Config
 	fs        emmerFs.FileSystem
 	logBuffer *LogBuffer

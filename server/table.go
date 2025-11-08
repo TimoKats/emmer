@@ -11,11 +11,11 @@ type TableItem struct{}
 func (TableItem) Del(request Request) Response {
 	log.Printf("deleting table: %s", request.Table)
 	// check if table exists
-	if _, err := session.fs.Fetch(request.Table); err != nil {
+	if _, err := read(request.Table); err != nil {
 		return Response{Data: nil, Error: err}
 	}
 	// delete file (and reset cache)
-	err := session.fs.DeleteFile(request.Table)
+	err := session.fs.Del(request.Table)
 	session.cache.tables = nil
 	return Response{Data: "deleted " + request.Table, Error: err}
 }
@@ -24,11 +24,15 @@ func (TableItem) Del(request Request) Response {
 func (TableItem) Add(request Request) Response {
 	log.Printf("creating table: %s", request.Table)
 	// check if table exists
-	if _, err := session.fs.Fetch(request.Table); err == nil {
+	if _, err := read(request.Table); err == nil {
 		return Response{Data: nil, Error: errors.New("table already exists")}
 	}
 	// create table and add to cache
-	err := session.fs.CreateJSON(request.Table, request.Value)
+	data, ok := request.Value.(map[string]any)
+	if !ok {
+		return Response{Data: nil, Error: errors.New("value not json")}
+	}
+	err := write(request, data)
 	if err == nil {
 		session.cache.tables = append(session.cache.tables, request.Table)
 	}
