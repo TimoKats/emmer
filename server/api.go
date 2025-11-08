@@ -152,13 +152,13 @@ func init() {
 	log.SetOutput(io.MultiWriter(os.Stdout, buffer))
 	// create config object
 	session.config = Config{
-		autoTable: os.Getenv("EM_AUTOTABLE") != "false",
-		username:  username,
-		password:  password,
-		commit:    commit,
+		username: username,
+		password: password,
+		commit:   commit,
 	}
 	session.logBuffer = buffer
 	session.cache.data = make(map[string]map[string]any)
 	session.fs = emmerFs.SetupLocal()
 	session.commits = 1
+	log.Printf("config: %v", session.config)
 }

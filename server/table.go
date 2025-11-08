@@ -41,13 +41,13 @@ func (TableItem) Add(request Request) Response {
 
 // queries tables (so not table contents)
 func (TableItem) Get(request Request) Response {
-	log.Printf("querying table meta-data: %s", request.Table)
+	log.Printf("querying tables: %s", request.Table)
 	// fetch all tables
 	if len(session.cache.tables) != 0 {
 		return Response{Data: session.cache.tables, Error: nil}
 	}
 	// if no cache, read directly
-	files, err := session.fs.List()
+	files, err := session.fs.Ls()
 	session.cache.tables = files
 	return Response{Data: files, Error: err}
 }

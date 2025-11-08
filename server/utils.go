@@ -6,22 +6,32 @@ import (
 	"strconv"
 )
 
-// NEW -
+// tries reading data from cache, reads from filesystem as backup
 func read(filename string) (map[string]any, error) { // to utils
 	if data, ok := session.cache.data[filename]; ok {
+		log.Println("reading data from cache")
 		return data, nil
 	}
-	return session.fs.Get(filename)
+	log.Println("reading data from filesystem")
+	data, err := session.fs.Get(filename)
+	if err == nil {
+		session.cache.data[filename] = data
+	}
+	return data, err
 }
 
-// NEW -
+// write to cache, and potentially to filesystem (depending on commit strategy)
 func write(request Request, data map[string]any) error {
 	session.cache.data[request.Table] = data
-	if session.config.commit%session.commits == 0 {
+	log.Println(session.config.commit, session.commits)
+	if (session.config.commit%session.commits == 0) && session.config.commit >= 0 {
+		log.Println("writing to filesystem")
 		err := session.fs.Put(request.Table, data)
 		if err != nil {
 			return err
 		}
+	}
+	if session.commits > session.config.commit {
 		session.commits = 0
 	}
 	session.commits += 1

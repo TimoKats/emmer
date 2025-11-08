@@ -15,10 +15,9 @@ type LogBuffer struct {
 }
 
 type Config struct {
-	autoTable bool
-	username  string
-	password  string
-	commit    int
+	username string
+	password string
+	commit   int
 }
 
 type Cache struct {

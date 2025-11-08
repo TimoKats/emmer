@@ -7,8 +7,7 @@
 package server
 
 type FileSystem interface {
-	Info() string
-	List() ([]string, error)
+	Ls() ([]string, error)
 	Put(filename string, value any) error
 	Get(filename string) (map[string]any, error)
 	Del(filename string) error

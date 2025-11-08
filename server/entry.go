@@ -45,7 +45,7 @@ func (EntryItem) Add(request Request) Response {
 
 // query for an entry in a table. Returns query result (and updates cache).
 func (EntryItem) Get(request Request) Response {
-	log.Printf("querying table %s", request.Table)
+	log.Printf("querying table: %s", request.Table)
 	data, err := read(request.Table)
 	if err != nil {
 		return Response{Data: nil, Error: err}

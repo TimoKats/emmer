@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 type LocalFS struct {
@@ -75,9 +76,8 @@ func (io LocalFS) Del(filename string) error {
 	return os.Remove(path)
 }
 
-// list json files in io folder, along with some statistics
-func (io LocalFS) List() ([]string, error) {
-	// get all files in io folder
+// list json files in io folder
+func (io LocalFS) Ls() ([]string, error) {
 	files, err := os.ReadDir(io.Folder)
 	result := []string{}
 	if err != nil {
@@ -86,15 +86,11 @@ func (io LocalFS) List() ([]string, error) {
 	// iterate over json files
 	for _, f := range files {
 		if filepath.Ext(f.Name()) == ".json" {
-			result = append(result, f.Name())
+			filename := strings.TrimSuffix(f.Name(), ".json")
+			result = append(result, filename)
 		}
 	}
 	return result, nil
-}
-
-// basic info function. Used for logging
-func (io LocalFS) Info() string {
-	return "local fs with root dir: " + io.Folder
 }
 
 // creates new localFS instance with settings applied
