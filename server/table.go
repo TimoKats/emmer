@@ -11,7 +11,7 @@ type TableItem struct{}
 func (TableItem) Del(request Request) Response {
 	log.Printf("deleting table: %s", request.Table)
 	// check if table exists
-	if _, err := read(request.Table); err != nil {
+	if _, err := read(request.Table, request.Mode); err != nil {
 		return Response{Data: nil, Error: err}
 	}
 	// delete file (and reset cache)
@@ -24,7 +24,7 @@ func (TableItem) Del(request Request) Response {
 func (TableItem) Add(request Request) Response {
 	log.Printf("creating table: %s", request.Table)
 	// check if table exists
-	if _, err := read(request.Table); err == nil {
+	if _, err := read(request.Table, request.Mode); err == nil {
 		return Response{Data: nil, Error: errors.New("table already exists")}
 	}
 	// create table and add to cache

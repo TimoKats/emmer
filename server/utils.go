@@ -50,8 +50,8 @@ func parseResponse(w http.ResponseWriter, response Response) error {
 }
 
 // tries reading data from cache, reads from filesystem as backup
-func read(filename string) (map[string]any, error) {
-	if data, ok := session.cache.data[filename]; ok {
+func read(filename string, mode string) (map[string]any, error) {
+	if data, ok := session.cache.data[filename]; ok && mode != "fs" {
 		log.Println("reading data from cache")
 		return data, nil
 	}
