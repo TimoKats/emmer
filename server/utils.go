@@ -7,7 +7,7 @@ import (
 )
 
 // tries reading data from cache, reads from filesystem as backup
-func read(filename string) (map[string]any, error) { // to utils
+func read(filename string) (map[string]any, error) {
 	if data, ok := session.cache.data[filename]; ok {
 		log.Println("reading data from cache")
 		return data, nil
@@ -24,15 +24,13 @@ func read(filename string) (map[string]any, error) { // to utils
 func write(request Request, data map[string]any) error {
 	session.cache.data[request.Table] = data
 	log.Println(session.config.commit, session.commits)
-	if (session.config.commit%session.commits == 0) && session.config.commit >= 0 {
+	if session.config.commit == session.commits {
 		log.Println("writing to filesystem")
 		err := session.fs.Put(request.Table, data)
+		session.commits = 0
 		if err != nil {
 			return err
 		}
-	}
-	if session.commits > session.config.commit {
-		session.commits = 0
 	}
 	session.commits += 1
 	return nil

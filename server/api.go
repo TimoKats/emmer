@@ -21,7 +21,6 @@ var session Session
 
 // get HTTP request and format it into Request object used by server
 func parseRequest(r *http.Request) (Request, error) {
-	// parse URL path (parameters, path)
 	request := Request{Method: r.Method, Mode: r.FormValue("mode")}
 	urlPath := r.URL.Path[len("/api/"):]
 	urlItems := strings.Split(urlPath, "/")
@@ -69,7 +68,6 @@ func selectItem(request Request) (Item, error) {
 
 // helper function that selects the interface based on the URL path
 func ApiHandler(w http.ResponseWriter, r *http.Request) {
-	// set up
 	var response Response
 	request, parseErr := parseRequest(r)
 	item, itemErr := selectItem(request)
@@ -77,7 +75,6 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest) // to response
 		return
 	}
-	// select function
 	switch request.Method {
 	case "PUT":
 		response = item.Add(request)
@@ -86,10 +83,9 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		response = item.Get(request)
 	default:
-		http.Error(w, "please use put/del/get", http.StatusMethodNotAllowed) // to response
+		http.Error(w, "please use put/del/get", http.StatusMethodNotAllowed)
 		return
 	}
-	// check errors and return response
 	if err := parseResponse(w, response); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -137,7 +133,7 @@ func init() {
 		log.Printf("set password to: %s", password)
 	}
 	// cache settings
-	commit := 0
+	commit := 1
 	commitEnv := os.Getenv("EM_COMMIT")
 	if commitEnv != "" {
 		commitInt, err := strconv.Atoi(commitEnv)
