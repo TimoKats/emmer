@@ -3,10 +3,8 @@ package server
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"strconv"
-	"strings"
 
 	emmerFs "github.com/TimoKats/emmer/server/fs"
 
@@ -19,58 +17,21 @@ import (
 
 var session Session
 
-// get HTTP request and format it into Request object used by server
-func parseRequest(r *http.Request) (Request, error) {
-	request := Request{Method: r.Method, Mode: r.FormValue("mode")}
-	urlPath := r.URL.Path[len("/api/"):]
-	urlItems := strings.Split(urlPath, "/")
-	if len(urlItems) > 0 {
-		request.Table = urlItems[0]
-		if len(urlItems) > 1 {
-			request.Key = urlItems[1:]
-		}
-	}
-	// parse request body
-	payload, err := io.ReadAll(r.Body)
-	defer r.Body.Close() //nolint:errcheck
-	if err != nil {
-		return request, err
-	}
-	if len(payload) > 0 {
-		err = json.Unmarshal(payload, &request.Value)
-	}
-	return request, err
-}
-
-// takes response object and writes the HTTP response object
-func parseResponse(w http.ResponseWriter, response Response) error {
-	if response.Error != nil {
-		w.Header().Set("Content-Type", "text/plain")
-		if strings.Contains(response.Error.Error(), "not found") {
-			w.WriteHeader(404)
-		} else {
-			w.WriteHeader(500)
-		}
-		return json.NewEncoder(w).Encode(response.Error.Error())
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-	return json.NewEncoder(w).Encode(response.Data)
-}
-
-// returns the item to apply CRUD operations on
-func selectItem(request Request) (Item, error) {
-	if len(request.Key) > 0 {
-		return EntryItem{}, nil
-	}
-	return TableItem{}, nil
-}
-
 // helper function that selects the interface based on the URL path
 func ApiHandler(w http.ResponseWriter, r *http.Request) {
+
+	// returns the item to apply CRUD operations on
+	toggle := func(request Request) (Item, error) {
+		if len(request.Key) > 0 {
+			return EntryItem{}, nil
+		}
+		return TableItem{}, nil
+	}
+
+	// apply CRUD to correct item and return response
 	var response Response
 	request, parseErr := parseRequest(r)
-	item, itemErr := selectItem(request)
+	item, itemErr := toggle(request)
 	if err := errors.Join(parseErr, itemErr); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest) // to response
 		return
@@ -101,6 +62,16 @@ func PingHandler(w http.ResponseWriter, r *http.Request) {
 func LogsHandler(w http.ResponseWriter, r *http.Request) {
 	for _, entry := range session.logBuffer.GetLogs() {
 		fmt.Fprint(w, entry) //nolint:errcheck
+	}
+}
+
+// write all cache to filesystem
+func CommitHandler(w http.ResponseWriter, r *http.Request) {
+	for filename, data := range session.cache.data {
+		err := session.fs.Put(filename, data)
+		if err != nil {
+			log.Printf("error writing cache of %s", filename)
+		}
 	}
 }
 

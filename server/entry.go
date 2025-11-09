@@ -15,7 +15,7 @@ func (EntryItem) Del(request Request) Response {
 		return Response{Data: nil, Error: err}
 	}
 	// update contents, and write to cache/fs
-	if err = deleteNested(data, request.Key); err != nil {
+	if err = pop(data, request.Key); err != nil {
 		return Response{Data: nil, Error: err}
 	}
 	if err = write(request, data); err != nil {
@@ -33,7 +33,7 @@ func (EntryItem) Add(request Request) Response {
 		return Response{Data: nil, Error: err}
 	}
 	// update json, and update cache
-	err = insertNested(data, request.Key, request.Value, request.Mode)
+	err = insert(data, request.Key, request.Value, request.Mode)
 	if err != nil {
 		return Response{Data: nil, Error: err}
 	}
@@ -50,6 +50,6 @@ func (EntryItem) Get(request Request) Response {
 	if err != nil {
 		return Response{Data: nil, Error: err}
 	}
-	result, err := findKey(data, request.Key)
+	result, err := query(data, request.Key)
 	return Response{Data: result, Error: err}
 }

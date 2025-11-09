@@ -1,10 +1,53 @@
 package server
 
 import (
+	"encoding/json"
 	"errors"
+	"io"
 	"log"
+	"net/http"
 	"strconv"
+	"strings"
 )
+
+// get HTTP request and format it into Request object used by server
+func parseRequest(r *http.Request) (Request, error) {
+	request := Request{Method: r.Method, Mode: r.FormValue("mode")}
+	urlPath := r.URL.Path[len("/api/"):]
+	urlItems := strings.Split(urlPath, "/")
+	if len(urlItems) > 0 {
+		request.Table = urlItems[0]
+		if len(urlItems) > 1 {
+			request.Key = urlItems[1:]
+		}
+	}
+	// parse request body
+	payload, err := io.ReadAll(r.Body)
+	defer r.Body.Close() //nolint:errcheck
+	if err != nil {
+		return request, err
+	}
+	if len(payload) > 0 {
+		err = json.Unmarshal(payload, &request.Value)
+	}
+	return request, err
+}
+
+// takes response object and writes the HTTP response object
+func parseResponse(w http.ResponseWriter, response Response) error {
+	if response.Error != nil {
+		w.Header().Set("Content-Type", "text/plain")
+		if strings.Contains(response.Error.Error(), "not found") {
+			w.WriteHeader(404)
+		} else {
+			w.WriteHeader(500)
+		}
+		return json.NewEncoder(w).Encode(response.Error.Error())
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	return json.NewEncoder(w).Encode(response.Data)
+}
 
 // tries reading data from cache, reads from filesystem as backup
 func read(filename string) (map[string]any, error) {
@@ -23,7 +66,6 @@ func read(filename string) (map[string]any, error) {
 // write to cache, and potentially to filesystem (depending on commit strategy)
 func write(request Request, data map[string]any) error {
 	session.cache.data[request.Table] = data
-	log.Println(session.config.commit, session.commits)
 	if session.config.commit == session.commits {
 		log.Println("writing to filesystem")
 		err := session.fs.Put(request.Table, data)
@@ -67,7 +109,7 @@ func updateValue(current any, new any, mode string) any {
 }
 
 // add value on nested key (e.g. [1,2,3] > map[1][2][3] = value)
-func insertNested(data map[string]any, keys []string, value any, mode string) error {
+func insert(data map[string]any, keys []string, value any, mode string) error {
 	current := data
 	for i, key := range keys {
 		if i == len(keys)-1 {
@@ -87,7 +129,7 @@ func insertNested(data map[string]any, keys []string, value any, mode string) er
 }
 
 // delete value on nested key (e.g. [1,2,3] > map[1][2][3])
-func deleteNested(data map[string]any, key []string) error {
+func pop(data map[string]any, key []string) error {
 	keyFound := true
 	current := data
 	for index, step := range key {
@@ -110,7 +152,7 @@ func deleteNested(data map[string]any, key []string) error {
 }
 
 // used to query on multi-keys. E.g. [1,2,3] returns map[1,2,3] > value
-func findKey(data map[string]any, key []string) (any, error) {
+func query(data map[string]any, key []string) (any, error) {
 	var current any = data
 	if len(key) == 0 || key[0] == "" {
 		return data, nil
