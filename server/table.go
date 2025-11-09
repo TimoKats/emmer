@@ -32,7 +32,7 @@ func (TableItem) Add(request Request) Response {
 	if !ok {
 		return Response{Data: nil, Error: errors.New("value not json")}
 	}
-	err := write(request, data)
+	err := write(request.Table, data)
 	if err == nil {
 		session.cache.tables = append(session.cache.tables, request.Table)
 	}

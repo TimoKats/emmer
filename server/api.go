@@ -53,7 +53,7 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// does nothing. Only used for health checks
+// does nothing, only used for health checks
 func PingHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "pong") //nolint:errcheck
 }
@@ -71,8 +71,20 @@ func CommitHandler(w http.ResponseWriter, r *http.Request) {
 		err := session.fs.Put(filename, data)
 		if err != nil {
 			log.Printf("error writing cache of %s", filename)
+		} else {
+			fmt.Fprint(w, "cache written to filesystem") //nolint:errcheck
 		}
 	}
+}
+
+// writes backup cache to filesystem, and clears backup
+func UndoHandler(w http.ResponseWriter, r *http.Request) {
+	if session.cache.backup.table != "" {
+		write(session.cache.backup.table, session.cache.backup.value)
+		session.cache.backup = Backup{}
+		return
+	}
+	http.Error(w, "no undo available", http.StatusBadRequest)
 }
 
 // basic auth that uses public username/password for check
@@ -125,7 +137,7 @@ func init() {
 	}
 	session.logBuffer = buffer
 	session.cache.data = make(map[string]map[string]any)
+	session.cache.data = make(map[string]map[string]any)
 	session.fs = emmerFs.SetupLocal()
 	session.commits = 1
-	log.Printf("config: %v", session.config)
 }

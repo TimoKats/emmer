@@ -18,7 +18,7 @@ func (EntryItem) Del(request Request) Response {
 	if err = pop(data, request.Key); err != nil {
 		return Response{Data: nil, Error: err}
 	}
-	if err = write(request, data); err != nil {
+	if err = write(request.Table, data); err != nil {
 		return Response{Data: nil, Error: err}
 	}
 	return Response{Data: "deleted key in " + request.Table, Error: err}
@@ -37,7 +37,7 @@ func (EntryItem) Add(request Request) Response {
 	if err != nil {
 		return Response{Data: nil, Error: err}
 	}
-	if err = write(request, data); err != nil {
+	if err = write(request.Table, data); err != nil {
 		return Response{Data: nil, Error: err}
 	}
 	return Response{Data: "added key in " + request.Table, Error: err}

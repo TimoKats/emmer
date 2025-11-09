@@ -25,8 +25,9 @@ func main() {
 	// api
 	http.HandleFunc("/ping", server.PingHandler)
 	http.HandleFunc("/logs", server.Auth(server.LogsHandler))
-	http.HandleFunc("/commit", server.CommitHandler)
-	http.HandleFunc("/api/", server.ApiHandler)
+	http.HandleFunc("/commit", server.Auth(server.CommitHandler))
+	http.HandleFunc("/undo", server.Auth(server.UndoHandler))
+	http.HandleFunc("/api/", server.Auth(server.ApiHandler))
 
 	// start the server
 	log.Println("server is running on http://localhost" + flags.port)
