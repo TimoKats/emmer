@@ -20,15 +20,9 @@ type Config struct {
 	commit   int
 }
 
-type Backup struct {
-	table string
-	value map[string]any
-}
-
 type Cache struct {
 	tables []string
 	data   map[string]map[string]any
-	backup Backup
 }
 
 type Session struct {

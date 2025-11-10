@@ -65,10 +65,6 @@ func read(filename string, mode string) (map[string]any, error) {
 
 // write to cache, and potentially to filesystem (depending on commit strategy)
 func write(table string, data map[string]any) error {
-	session.cache.backup = Backup{
-		table: table,
-		value: session.cache.data[table],
-	}
 	session.cache.data[table] = data
 	if session.config.commit == session.commits {
 		log.Println("writing to filesystem")

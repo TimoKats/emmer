@@ -77,16 +77,6 @@ func CommitHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// writes backup cache to filesystem, and clears backup
-func UndoHandler(w http.ResponseWriter, r *http.Request) {
-	if session.cache.backup.table != "" {
-		write(session.cache.backup.table, session.cache.backup.value)
-		session.cache.backup = Backup{}
-		return
-	}
-	http.Error(w, "no undo available", http.StatusBadRequest)
-}
-
 // basic auth that uses public username/password for check
 func Auth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
