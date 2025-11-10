@@ -3,9 +3,8 @@ package server
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
-	"strings"
+	"strconv"
 
 	emmerFs "github.com/TimoKats/emmer/server/fs"
 
@@ -16,67 +15,27 @@ import (
 	"os"
 )
 
-var config Config
-
-// get HTTP request and format it into Request object used by server
-func parseRequest(r *http.Request) (Request, error) {
-	// parse URL path (parameters, path)
-	request := Request{Method: r.Method, Mode: r.FormValue("mode")}
-	urlPath := r.URL.Path[len("/api/"):]
-	urlItems := strings.Split(urlPath, "/")
-	if len(urlItems) > 0 {
-		request.Table = urlItems[0]
-		if len(urlItems) > 1 {
-			request.Key = urlItems[1:]
-		}
-	}
-	// parse request body
-	payload, err := io.ReadAll(r.Body)
-	defer r.Body.Close() //nolint:errcheck
-	if err != nil {
-		return request, err
-	}
-	if len(payload) > 0 {
-		err = json.Unmarshal(payload, &request.Value)
-	}
-	return request, err
-}
-
-// takes response object and writes the HTTP response object
-func parseResponse(w http.ResponseWriter, response Response) error {
-	if response.Error != nil {
-		w.Header().Set("Content-Type", "text/plain")
-		if strings.Contains(response.Error.Error(), "not found") {
-			w.WriteHeader(404)
-		} else {
-			w.WriteHeader(500)
-		}
-		return json.NewEncoder(w).Encode(response.Error.Error())
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-	return json.NewEncoder(w).Encode(response.Data)
-}
-
-// returns the item to apply CRUD operations on
-func selectItem(request Request) (Item, error) {
-	if len(request.Key) > 0 {
-		return EntryItem{}, nil
-	}
-	return TableItem{}, nil
-}
+var session Session
 
 // helper function that selects the interface based on the URL path
 func ApiHandler(w http.ResponseWriter, r *http.Request) {
-	// set up
+
+	// returns the item to apply CRUD operations on
+	toggle := func(request Request) (Item, error) {
+		if len(request.Key) > 0 {
+			return EntryItem{}, nil
+		}
+		return TableItem{}, nil
+	}
+
+	// apply CRUD to correct item and return response
 	var response Response
 	request, parseErr := parseRequest(r)
-	item, itemErr := selectItem(request)
+	item, itemErr := toggle(request)
 	if err := errors.Join(parseErr, itemErr); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest) // to response
 		return
 	}
-	// select function
 	switch request.Method {
 	case "PUT":
 		response = item.Add(request)
@@ -85,25 +44,36 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		response = item.Get(request)
 	default:
-		http.Error(w, "please use put/del/get", http.StatusMethodNotAllowed) // to response
+		http.Error(w, "please use put/del/get", http.StatusMethodNotAllowed)
 		return
 	}
-	// check errors and return response
 	if err := parseResponse(w, response); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }
 
-// does nothing. Only used for health checks
+// does nothing, only used for health checks
 func PingHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "pong") //nolint:errcheck
 }
 
 // shows last n (20) logs from server
 func LogsHandler(w http.ResponseWriter, r *http.Request) {
-	for _, entry := range config.logBuffer.GetLogs() {
+	for _, entry := range session.logBuffer.GetLogs() {
 		fmt.Fprint(w, entry) //nolint:errcheck
+	}
+}
+
+// write all cache to filesystem
+func CommitHandler(w http.ResponseWriter, r *http.Request) {
+	for filename, data := range session.cache.data {
+		err := session.fs.Put(filename, data)
+		if err != nil {
+			log.Printf("error writing cache of %s", filename)
+		} else {
+			fmt.Fprint(w, "cache written to filesystem") //nolint:errcheck
+		}
 	}
 }
 
@@ -111,7 +81,7 @@ func LogsHandler(w http.ResponseWriter, r *http.Request) {
 func Auth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user, pass, ok := r.BasicAuth()
-		if !ok || user != config.username || pass != config.password {
+		if !ok || user != session.config.username || pass != session.config.password {
 			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
@@ -135,15 +105,29 @@ func init() {
 		password = base64.URLEncoding.EncodeToString(b)
 		log.Printf("set password to: %s", password)
 	}
+	// cache settings
+	commit := 1
+	commitEnv := os.Getenv("EM_COMMIT")
+	if commitEnv != "" {
+		commitInt, err := strconv.Atoi(commitEnv)
+		if err != nil {
+			fmt.Printf("Error converting commit strategy to int: %v", err)
+			return
+		}
+		commit = commitInt
+	}
 	// logs settings
 	buffer := NewLogBuffer(20)
 	log.SetOutput(io.MultiWriter(os.Stdout, buffer))
 	// create config object
-	config = Config{
-		logBuffer: buffer,
-		autoTable: os.Getenv("EM_AUTOTABLE") != "false",
-		username:  username,
-		password:  password,
-		fs:        emmerFs.SetupLocal(),
+	session.config = Config{
+		username: username,
+		password: password,
+		commit:   commit,
 	}
+	session.logBuffer = buffer
+	session.cache.data = make(map[string]map[string]any)
+	session.cache.data = make(map[string]map[string]any)
+	session.fs = emmerFs.SetupLocal()
+	session.commits = 1
 }

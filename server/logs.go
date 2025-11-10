@@ -13,7 +13,7 @@ func (b *LogBuffer) Write(p []byte) (n int, err error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	if len(b.logs) >= b.limit {
-		// remove oldest log every addition over the limit
+		// remove oldest log
 		b.logs = b.logs[1:]
 	}
 	b.logs = append(b.logs, string(p))
@@ -24,6 +24,5 @@ func (b *LogBuffer) Write(p []byte) (n int, err error) {
 func (b *LogBuffer) GetLogs() []string {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	// return a copy of the logs
 	return append([]string(nil), b.logs...)
 }

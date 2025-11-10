@@ -7,13 +7,8 @@
 package server
 
 type FileSystem interface {
-	Fetch(filename string) (string, error)
-	DeleteFile(filename string) error
-	List() ([]string, error)
-	Info() string
-
-	CreateJSON(filename string, value any) error
-	ReadJSON(filename string) (map[string]any, error)
-	UpdateJSON(filename string, key []string, value any, mode string) error
-	DeleteJSON(filename string, key []string) error
+	Ls() ([]string, error)
+	Put(filename string, value any) error
+	Get(filename string) (map[string]any, error)
+	Del(filename string) error
 }
