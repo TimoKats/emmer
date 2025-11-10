@@ -64,7 +64,7 @@ In this example, we will use emmer to create a small database for blogs and comm
 
 ```
 
-< hr/>
+<hr />
 </details>
 
 <details>
