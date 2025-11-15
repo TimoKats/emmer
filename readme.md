@@ -86,7 +86,7 @@ In this example, we will use emmer to create a small database for blogs and comm
 - EM_AUTOTABLE: Set to false if you DON'T want to automatically create a new file when adding an entry.
 - EM_USERNAME: Username of basic auth for API. Auto generated if empty.
 - EM_PASSWORD: Password of basic auth for API. Auto generated if empty
-- EM_FILESYSTEM: Local, AWS, etc. Not useful now, since I've only implemented local.
+- EM_CONNECTOR: Local, S3, etc. Not useful now, since I've only implemented local.
 - EM_FOLDER: When using local FS, this sets the folder emmer writes files to. Default: $HOME/.local/share/emmer (or XDG_DATA_HOME) (AppData on Windows).
 - EM_COMMIT: Optional numeric value. Impacts how often you write your cache to the filesystem. E.g. an EM_COMMIT of 5 writes to the filesystem every 5th change (other changes are just written to cache). Default is 1.
 
