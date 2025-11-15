@@ -78,7 +78,7 @@ In this example, we will use emmer to create a small database for blogs and comm
  - /commit: Write current cache to filesystem.
 
 <b>Parameters</b>
-- mode: increment. With PUT requests, f you access a numeric value, adding increment parameter will increase it by 1. Note, if you put a numeric value in your body (-1, 2, etc) then that's added to the numeric value instead.
+- mode: increment. With PUT requests, if you access a numeric value, adding increment parameter will increase it by 1. Note, if you put a numeric value in your body (-1, 2, etc) then that's added to the numeric value instead.
 - mode: append. With PUT requests, you can append objects (that you put in your request body) to a json list. Note, if the json key doesn't exist (or is not a list), this mode will do that conversion automatically.
 - mode: fs. With GET requests, you can use fs to force reading from the filesystem (and not cache).
 
@@ -92,6 +92,11 @@ In this example, we will use emmer to create a small database for blogs and comm
 
 <b>Flags</b>
 - -p: sets the port to run on. Default is 8080.
+
+<b>Connectors</b>
+As mentioned in the environment variables section, you can select a connector by changing the EM_CONNECTOR value.
+- Local: Stores files on your local device. You can still select the folder using EM_FOLDER.
+- S3: [in progress] Stores files in AWS S3 buckets.
 
 <hr />
 </details>
