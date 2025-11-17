@@ -93,7 +93,7 @@ In this example, we will use emmer to create a small database for blogs and comm
 <b>Flags</b>
 - -p: sets the port to run on. Default is 8080.
 
-<b>Connectors</b>
+<b>Connectors</b>  
 As mentioned in the environment variables section, you can select a connector by changing the EM_CONNECTOR value.
 - Local: Stores files on your local device. You can still select the folder using EM_FOLDER.
 - S3: [in progress] Stores files in AWS S3 buckets.
