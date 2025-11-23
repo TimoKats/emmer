@@ -128,6 +128,10 @@ func init() {
 	session.logBuffer = buffer
 	session.cache.data = make(map[string]map[string]any)
 	session.cache.data = make(map[string]map[string]any)
-	session.fs = emmerFs.SetupLocal()
+	if os.Getenv("EM_CONNECTOR") == "S3" {
+		session.fs = emmerFs.SetupS3()
+	} else {
+		session.fs = emmerFs.SetupLocal()
+	}
 	session.commits = 1
 }
