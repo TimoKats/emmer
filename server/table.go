@@ -17,6 +17,7 @@ func (TableItem) Del(request Request) Response {
 	// delete file (and reset cache)
 	err := session.fs.Del(request.Table)
 	session.cache.tables = nil
+	delete(session.cache.data, request.Table)
 	return Response{Data: "deleted " + request.Table, Error: err}
 }
 
