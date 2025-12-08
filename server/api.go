@@ -1,12 +1,7 @@
 package server
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"errors"
-	"strconv"
-
-	emmerFs "github.com/TimoKats/emmer/server/fs"
 
 	"fmt"
 	"io"
@@ -44,7 +39,7 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		response = item.Get(request)
 	default:
-		http.Error(w, "please use put/del/get", http.StatusMethodNotAllowed)
+		http.Error(w, "use put/del/get", http.StatusMethodNotAllowed)
 		return
 	}
 	if err := parseResponse(w, response); err != nil {
@@ -92,42 +87,20 @@ func Auth(next http.HandlerFunc) http.HandlerFunc {
 
 // upon init, set credentials and filesystem to use
 func init() {
-	// auth settings
-	username := os.Getenv("EM_USERNAME")
-	if username == "" {
-		username = "admin"
-		log.Printf("set username to: %s", username)
-	}
-	password := os.Getenv("EM_PASSWORD")
-	if password == "" {
-		b := make([]byte, 12)
-		rand.Read(b) //nolint:errcheck
-		password = base64.URLEncoding.EncodeToString(b)
-		log.Printf("set password to: %s", password)
-	}
-	// cache settings
-	commit := 1
-	commitEnv := os.Getenv("EM_COMMIT")
-	if commitEnv != "" {
-		commitInt, err := strconv.Atoi(commitEnv)
-		if err != nil {
-			fmt.Printf("Error converting commit strategy to int: %v", err)
-			return
-		}
-		commit = commitInt
-	}
-	// logs settings
+	username, password := initCredentials()
+	commits := initCache()
 	buffer := NewLogBuffer(20)
 	log.SetOutput(io.MultiWriter(os.Stdout, buffer))
 	// create config object
 	session.config = Config{
 		username: username,
 		password: password,
-		commit:   commit,
+		commit:   commits,
 	}
+	// session object
 	session.logBuffer = buffer
 	session.cache.data = make(map[string]map[string]any)
 	session.cache.data = make(map[string]map[string]any)
-	session.fs = emmerFs.SetupLocal()
+	session.fs = initConnector()
 	session.commits = 1
 }
