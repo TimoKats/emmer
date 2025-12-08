@@ -15,8 +15,8 @@ type LocalFS struct {
 }
 
 // takes filename and returns full path + extension to json file
-func (io LocalFS) getPath(filename string) string {
-	return filepath.Join(io.Folder, filename) + ".json"
+func (fs LocalFS) getPath(filename string) string {
+	return filepath.Join(fs.Folder, filename) + ".json"
 }
 
 // selects folder based on OS and env variables of the user
@@ -40,8 +40,8 @@ func selectFolder() string {
 }
 
 // creates empty (or prefilled) JSON file at path
-func (io LocalFS) Put(filename string, value any) error {
-	path := io.getPath(filename)
+func (fs LocalFS) Put(filename string, value any) error {
+	path := fs.getPath(filename)
 	f, err := os.Create(path)
 	if err != nil {
 		return err
@@ -57,10 +57,10 @@ func (io LocalFS) Put(filename string, value any) error {
 }
 
 // reads JSON file into map[string]any variable
-func (io LocalFS) Get(filename string) (map[string]any, error) {
+func (fs LocalFS) Get(filename string) (map[string]any, error) {
 	// get raw data
 	data := make(map[string]any)
-	path := io.getPath(filename)
+	path := fs.getPath(filename)
 	file, err := os.ReadFile(path)
 	if err != nil {
 		return data, errors.New("table " + filename + " not found")
@@ -71,14 +71,14 @@ func (io LocalFS) Get(filename string) (map[string]any, error) {
 }
 
 // removes entire JSON file
-func (io LocalFS) Del(filename string) error {
-	path := io.getPath(filename)
+func (fs LocalFS) Del(filename string) error {
+	path := fs.getPath(filename)
 	return os.Remove(path)
 }
 
-// list json files in io folder
-func (io LocalFS) Ls() ([]string, error) {
-	files, err := os.ReadDir(io.Folder)
+// list json files in fs folder
+func (fs LocalFS) Ls() ([]string, error) {
+	files, err := os.ReadDir(fs.Folder)
 	result := []string{}
 	if err != nil {
 		return result, err

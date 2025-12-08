@@ -57,6 +57,7 @@ func (TableItem) Get(request Request) Response {
 				return Response{Data: []string{file}, Error: nil}
 			}
 		}
+		return Response{Data: nil, Error: errors.New(request.Table + " not found")}
 	}
 	return Response{Data: session.cache.tables, Error: nil}
 }

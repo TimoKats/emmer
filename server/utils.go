@@ -1,11 +1,18 @@
 package server
 
 import (
+	"fmt"
+
+	emmerFs "github.com/TimoKats/emmer/server/fs"
+
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -186,4 +193,41 @@ func formatFilename(filename string) string {
 		return strings.ReplaceAll(filename, "--", "/")
 	}
 	return filename
+}
+
+func initCredentials() (string, string) {
+	username := os.Getenv("EM_USERNAME")
+	if username == "" {
+		username = "admin"
+		log.Printf("set username to: %s", username)
+	}
+	password := os.Getenv("EM_PASSWORD")
+	if password == "" {
+		b := make([]byte, 12)
+		rand.Read(b) //nolint:errcheck
+		password = base64.URLEncoding.EncodeToString(b)
+		log.Printf("set password to: %s", password)
+	}
+	return username, password
+}
+
+func initConnector() emmerFs.FileSystem {
+	if os.Getenv("EM_CONNECTOR") == "S3" {
+		return emmerFs.SetupS3()
+	}
+	return emmerFs.SetupLocal()
+}
+
+func initCache() int {
+	commit := 1
+	commitEnv := os.Getenv("EM_COMMIT")
+	if commitEnv != "" {
+		commitInt, err := strconv.Atoi(commitEnv)
+		if err != nil {
+			fmt.Printf("Error converting commit strategy to int: %v", err)
+			return 1
+		}
+		commit = commitInt
+	}
+	return commit
 }
