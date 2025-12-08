@@ -20,16 +20,13 @@ type S3Fs struct {
 	ctx    context.Context
 }
 
-func (io S3Fs) formatFilename(filename string) string {
-	if strings.Contains(filename, "--") {
-		return strings.ReplaceAll(filename, "--", "/")
-	}
-	return filename
+func (io S3Fs) formatS3Key(filename string) string {
+	return strings.ReplaceAll(filename, "--", "/")
 }
 
 func (io S3Fs) Put(filename string, value any) error {
 	// convert data to JSON
-	filename = io.formatFilename(filename)
+	filename = io.formatS3Key(filename)
 	jsonBytes, err := json.Marshal(value)
 	if err != nil {
 		return err
@@ -47,7 +44,7 @@ func (io S3Fs) Put(filename string, value any) error {
 func (io S3Fs) Get(filename string) (map[string]any, error) {
 	// fetch the object from S3
 	data := make(map[string]any)
-	filename = io.formatFilename(filename)
+	filename = io.formatS3Key(filename)
 	resp, err := io.client.GetObject(io.ctx, &s3.GetObjectInput{
 		Bucket: aws.String(io.bucket),
 		Key:    aws.String(filename),
@@ -55,8 +52,8 @@ func (io S3Fs) Get(filename string) (map[string]any, error) {
 	if err != nil {
 		return data, err
 	}
-	defer resp.Body.Close() //nolint:errcheck
 	// read the object body
+	defer resp.Body.Close()                  //nolint:errcheck
 	bodyBytes, err := gio.ReadAll(resp.Body) //nolint:errcheck
 	if err != nil {
 		return data, err
@@ -66,7 +63,7 @@ func (io S3Fs) Get(filename string) (map[string]any, error) {
 }
 
 func (io S3Fs) Del(filename string) error {
-	filename = io.formatFilename(filename)
+	filename = io.formatS3Key(filename)
 	_, err := io.client.DeleteObject(io.ctx, &s3.DeleteObjectInput{
 		Bucket: aws.String(io.bucket),
 		Key:    aws.String(filename),

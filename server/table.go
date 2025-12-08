@@ -44,11 +44,19 @@ func (TableItem) Add(request Request) Response {
 func (TableItem) Get(request Request) Response {
 	log.Printf("querying tables: %s", request.Table)
 	// fetch all tables
-	if len(session.cache.tables) != 0 {
-		return Response{Data: session.cache.tables, Error: nil}
+	if len(session.cache.tables) == 0 {
+		files, err := session.fs.Ls()
+		if err != nil {
+			return Response{Data: nil, Error: err}
+		}
+		session.cache.tables = files
 	}
-	// if no cache, read directly
-	files, err := session.fs.Ls()
-	session.cache.tables = files
-	return Response{Data: files, Error: err}
+	if len(request.Table) != 0 {
+		for _, file := range session.cache.tables {
+			if file == formatFilename(request.Table) {
+				return Response{Data: []string{file}, Error: nil}
+			}
+		}
+	}
+	return Response{Data: session.cache.tables, Error: nil}
 }

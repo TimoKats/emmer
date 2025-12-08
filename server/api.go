@@ -44,7 +44,7 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		response = item.Get(request)
 	default:
-		http.Error(w, "please use put/del/get", http.StatusMethodNotAllowed)
+		http.Error(w, "use put/del/get", http.StatusMethodNotAllowed)
 		return
 	}
 	if err := parseResponse(w, response); err != nil {

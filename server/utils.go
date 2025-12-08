@@ -37,7 +37,7 @@ func parseRequest(r *http.Request) (Request, error) {
 func parseResponse(w http.ResponseWriter, response Response) error {
 	if response.Error != nil {
 		w.Header().Set("Content-Type", "text/plain")
-		if strings.Contains(response.Error.Error(), "not found") {
+		if strings.Contains(response.Error.Error(), "not found") || strings.Contains(response.Error.Error(), "404") {
 			w.WriteHeader(404)
 		} else {
 			w.WriteHeader(500)
@@ -179,4 +179,11 @@ func query(data map[string]any, key []string) (any, error) {
 		}
 	}
 	return current, nil
+}
+
+func formatFilename(filename string) string {
+	if strings.Contains(filename, "--") {
+		return strings.ReplaceAll(filename, "--", "/")
+	}
+	return filename
 }
