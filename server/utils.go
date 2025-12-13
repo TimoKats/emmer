@@ -188,6 +188,7 @@ func query(data map[string]any, key []string) (any, error) {
 	return current, nil
 }
 
+// if you want to put a folder path before accessing the json, use '--'
 func formatFilename(filename string) string {
 	if strings.Contains(filename, "--") {
 		return strings.ReplaceAll(filename, "--", "/")
@@ -195,6 +196,7 @@ func formatFilename(filename string) string {
 	return filename
 }
 
+// generates (or) selects a username and password
 func initCredentials() (string, string) {
 	username := os.Getenv("EM_USERNAME")
 	if username == "" {
@@ -211,6 +213,7 @@ func initCredentials() (string, string) {
 	return username, password
 }
 
+// selects the connector (fs interface) based on env variable
 func initConnector() emmerFs.FileSystem {
 	if os.Getenv("EM_CONNECTOR") == "S3" {
 		return emmerFs.SetupS3()
@@ -218,6 +221,7 @@ func initConnector() emmerFs.FileSystem {
 	return emmerFs.SetupLocal()
 }
 
+// selects the number of operations needed before a write action to fs
 func initCache() int {
 	commit := 1
 	commitEnv := os.Getenv("EM_COMMIT")
@@ -230,4 +234,20 @@ func initCache() int {
 		commit = commitInt
 	}
 	return commit
+}
+
+// access 2 (default) means auth on put/del/get, 1 only on get, 0 on no methods
+func initAccess() int {
+	access := 2
+	accessEnv := os.Getenv("EM_ACCESS")
+	if accessEnv != "" {
+		commitInt, err := strconv.Atoi(accessEnv)
+		if err != nil {
+			fmt.Printf("Error converting commit strategy to int: %v", err)
+			return 0
+		}
+		access = commitInt
+	}
+	log.Printf("set access level to %d", access)
+	return access
 }
