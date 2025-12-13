@@ -74,9 +74,17 @@ func CommitHandler(w http.ResponseWriter, r *http.Request) {
 
 // basic auth that uses public username/password for check
 func Auth(next http.HandlerFunc) http.HandlerFunc {
+	access := func(method string) int {
+		level := session.config.access
+		if method != "GET" {
+			level++
+		}
+		log.Printf("request auth level: %d", level)
+		return level
+	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		user, pass, ok := r.BasicAuth()
-		if !ok || user != session.config.username || pass != session.config.password {
+		if (!ok || user != session.config.username || pass != session.config.password) && access(r.Method) > 1 {
 			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
@@ -89,6 +97,7 @@ func Auth(next http.HandlerFunc) http.HandlerFunc {
 func init() {
 	username, password := initCredentials()
 	commits := initCache()
+	access := initAccess()
 	buffer := NewLogBuffer(20)
 	log.SetOutput(io.MultiWriter(os.Stdout, buffer))
 	// create config object
@@ -96,6 +105,7 @@ func init() {
 		username: username,
 		password: password,
 		commit:   commits,
+		access:   access,
 	}
 	// session object
 	session.logBuffer = buffer

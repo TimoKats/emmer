@@ -103,6 +103,7 @@ func SetupS3() *S3Fs {
 	if err != nil || len(bucket) == 0 {
 		log.Panicf("can't setup S3: %s", err.Error())
 	}
+	log.Printf("selected S3 fs in %s", bucket)
 	return &S3Fs{
 		client: s3.NewFromConfig(cfg),
 		bucket: bucket,

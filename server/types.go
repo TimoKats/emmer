@@ -18,6 +18,7 @@ type Config struct {
 	username string
 	password string
 	commit   int
+	access   int
 }
 
 type Cache struct {
