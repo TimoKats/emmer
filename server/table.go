@@ -31,7 +31,7 @@ func (TableItem) Add(request Request) Response {
 	// create table and add to cache
 	data, ok := request.Value.(map[string]any)
 	if !ok {
-		return Response{Data: nil, Error: errors.New("value not json")}
+		return Response{Data: nil, Error: errors.New("body not a mapping")}
 	}
 	err := write(request.Table, data)
 	if err == nil {
@@ -51,6 +51,7 @@ func (TableItem) Get(request Request) Response {
 		}
 		session.cache.tables = files
 	}
+	// search for selected table
 	if len(request.Table) != 0 {
 		for _, file := range session.cache.tables {
 			if file == formatFilename(request.Table) {

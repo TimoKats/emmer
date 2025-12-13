@@ -228,7 +228,7 @@ func initCache() int {
 	if commitEnv != "" {
 		commitInt, err := strconv.Atoi(commitEnv)
 		if err != nil {
-			fmt.Printf("Error converting commit strategy to int: %v", err)
+			fmt.Printf("error converting commit strategy to int: %v", err)
 			return 1
 		}
 		commit = commitInt
@@ -241,13 +241,13 @@ func initAccess() int {
 	access := 2
 	accessEnv := os.Getenv("EM_ACCESS")
 	if accessEnv != "" {
-		commitInt, err := strconv.Atoi(accessEnv)
+		accessInt, err := strconv.Atoi(accessEnv)
 		if err != nil {
-			fmt.Printf("Error converting commit strategy to int: %v", err)
-			return 0
+			fmt.Printf("error converting access level to int: %v", err)
+			return 2
 		}
-		access = commitInt
+		access = accessInt
 	}
-	log.Printf("set access level to %d", access)
+	log.Printf("set access level to: %d", access)
 	return access
 }
