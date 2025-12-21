@@ -5,10 +5,7 @@ import (
 	"log/slog"
 
 	"fmt"
-	"io"
-	"log"
 	"net/http"
-	"os"
 )
 
 var session Session
@@ -54,13 +51,6 @@ func PingHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "pong") //nolint:errcheck
 }
 
-// shows last n (20) logs from server
-func LogsHandler(w http.ResponseWriter, r *http.Request) {
-	for _, entry := range session.logBuffer.GetLogs() {
-		fmt.Fprint(w, entry) //nolint:errcheck
-	}
-}
-
 // write all cache to filesystem
 func CommitHandler(w http.ResponseWriter, r *http.Request) {
 	for filename, data := range session.cache.data {
@@ -100,8 +90,6 @@ func init() {
 	username, password := initCredentials()
 	commits := initCache()
 	access := initAccess()
-	buffer := NewLogBuffer(20)
-	log.SetOutput(io.MultiWriter(os.Stdout, buffer))
 	// create config object
 	session.config = Config{
 		username: username,
@@ -110,7 +98,6 @@ func init() {
 		access:   access,
 	}
 	// session object
-	session.logBuffer = buffer
 	session.cache.data = make(map[string]map[string]any)
 	session.cache.data = make(map[string]map[string]any)
 	session.fs = initConnector()

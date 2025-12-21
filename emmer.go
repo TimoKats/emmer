@@ -25,7 +25,6 @@ func main() {
 
 	// api
 	http.HandleFunc("/ping", server.PingHandler)
-	http.HandleFunc("/logs", server.Auth(server.LogsHandler))
 	http.HandleFunc("/commit", server.Auth(server.CommitHandler))
 	http.HandleFunc("/api/", server.Auth(server.ApiHandler))
 
