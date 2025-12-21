@@ -68,7 +68,7 @@ func CommitHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			slog.Error("error writing cache:", "file", filename)
 		} else {
-			slog.Debug("cahce written to filesystem:", "file", filename)
+			slog.Debug("cache written to filesystem:", "file", filename)
 			fmt.Fprint(w, "cache written to filesystem") //nolint:errcheck
 		}
 	}
