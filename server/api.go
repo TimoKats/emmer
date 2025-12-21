@@ -53,6 +53,10 @@ func PingHandler(w http.ResponseWriter, r *http.Request) {
 
 // write all cache to filesystem
 func CommitHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "use post", http.StatusMethodNotAllowed)
+		return
+	}
 	for filename, data := range session.cache.data {
 		err := session.fs.Put(filename, data)
 		if err != nil {

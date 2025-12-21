@@ -1,114 +1,63 @@
 package main
 
 import (
-	"path/filepath"
-
 	server "github.com/TimoKats/emmer/server"
 
 	"bytes"
-	"encoding/json"
 	"log"
 	"net/http"
-	"os"
 	"testing"
 	"time"
 )
 
-type RequestConfig struct {
-	Method         string
-	Endpoint       string
-	Body           string
-	ExpectedStatus int
-}
-
 func serve() {
-	// api
 	http.HandleFunc("/ping", server.PingHandler)
 	http.HandleFunc("/api/", server.ApiHandler)
-
-	// start the server
-	log.Println("server is running on http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 // send http request and returns the status code and error
 func request(cfg RequestConfig) int {
-	// format request from object
-	req, err := http.NewRequest(cfg.Method, "http://localhost:8080"+cfg.Endpoint, bytes.NewBuffer([]byte(cfg.Body)))
+	url := "http://localhost:8080" + cfg.Endpoint
+	req, err := http.NewRequest(cfg.Method, url, bytes.NewBuffer([]byte(cfg.Body)))
 	if err != nil {
-		log.Println(err)
 		return 0
 	}
-	// set headers / send request
-	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Println(err)
-		return 0
-	}
-	defer resp.Body.Close() //nolint:errcheck
+	resp, _ := client.Do(req) //nolint:errcheck
 	return resp.StatusCode
 }
 
-// read json file at test location
-func readJson(filename string) map[string]any {
-	// get raw data
-	data := make(map[string]any)
-	file, err := os.ReadFile(filename)
-	if err != nil {
-		return data
-	}
-	// put raw data into map object
-	json.Unmarshal(file, &data) //nolint:errcheck
-	return data
-}
-
-// test if two maps are equal (loosly/stringified)
-func jsonEqual(a, b any) bool {
-	aByte, _ := json.Marshal(a) //nolint:errcheck
-	bByte, _ := json.Marshal(b) //nolint:errcheck
-	return string(aByte) == string(bByte)
-}
-
-// create path to test file
-func testFile() string {
-	var folder string
-	if folder = os.Getenv("EM_FOLDER"); folder == "" {
-		folder = filepath.Join(os.Getenv("HOME"), ".local", "share", "emmer")
-	}
-	return filepath.Join(folder, "test.json")
-}
-
-func TestApi(t *testing.T) {
-	// start server
-	go serve()
-	time.Sleep(500 * time.Millisecond)
-
-	// setup tests, files, etc
-	testFile := testFile()
-	tests := []RequestConfig{
-		{"PUT", "/api/test", `{"timo":1}`, http.StatusOK},
-		{"PUT", "/api/test/pipo", `5`, http.StatusOK},
-		{"DELETE", "/api/test", `{}`, http.StatusOK},
-	}
-	expectedData := []map[string]any{
-		{"timo": 1},
-		{"timo": 1, "pipo": 5},
-		nil,
-	}
-
-	// run tests
+func run(tests []RequestConfig, results []map[string]any, t *testing.T) {
+	filename := filename()
 	for index, test := range tests {
 		StatusCode := request(test)
 		if StatusCode != test.ExpectedStatus {
 			t.Errorf("Expected status %d, got %d", test.ExpectedStatus, StatusCode)
 		}
-		if expectedData[index] != nil {
-			result := readJson(testFile)
-			if !jsonEqual(expectedData[index], result) {
-				t.Errorf("Expected result %s, got %s", expectedData[index], result)
+		if results[index] != nil {
+			result := readJson(filename)
+			if !jsonEqual(results[index], result) {
+				t.Errorf("Expected result %s, got %s", results[index], result)
 			}
 		}
 	}
+}
+
+func TestApi(t *testing.T) {
+	go serve()
+	time.Sleep(500 * time.Millisecond)
+	// test scenario's + expected results
+	tests := []RequestConfig{
+		{"PUT", "/api/test", `{"timo":1}`, http.StatusOK},
+		{"PUT", "/api/test/pipo", `5`, http.StatusOK},
+		{"DELETE", "/api/test", `{}`, http.StatusOK},
+	}
+	results := []map[string]any{
+		{"timo": 1},
+		{"timo": 1, "pipo": 5},
+		nil,
+	}
+	// run tests
+	run(tests, results, t)
 }
