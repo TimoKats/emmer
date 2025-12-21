@@ -107,7 +107,7 @@ func updateValue(current any, new any, mode string) any {
 		} else if newOk {
 			return newInt
 		}
-		slog.Error("incompatible values:", current, new)
+		slog.Error("incompatible values", "current", current, "new", new)
 		return current
 	default:
 		return new
