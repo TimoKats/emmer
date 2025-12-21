@@ -1,14 +1,14 @@
 package server
 
 import (
-	"log"
+	"log/slog"
 )
 
 type EntryItem struct{}
 
 // fetches path for table name, then removes key from JSON.
 func (EntryItem) Del(request Request) Response {
-	log.Printf("deleting key %s in %v", request.Key, request.Table)
+	slog.Debug("delete:", "key", request.Key, "table", request.Table)
 	// read file from cache/fs
 	data, err := read(request.Table, request.Mode)
 	if err != nil {
@@ -26,7 +26,7 @@ func (EntryItem) Del(request Request) Response {
 
 // parses entry payload and updates the corresponding table
 func (EntryItem) Add(request Request) Response {
-	log.Printf("adding value for %s in table %s", request.Key, request.Table)
+	slog.Debug("add:", "key", request.Key, "table", request.Table)
 	// if it doesn't exist, create it. still errors? return error.
 	data, err := read(request.Table, request.Mode)
 	if err != nil {
@@ -45,7 +45,7 @@ func (EntryItem) Add(request Request) Response {
 
 // query for an entry in a table. Returns query result (and updates cache).
 func (EntryItem) Get(request Request) Response {
-	log.Printf("querying table: %s", request.Table)
+	slog.Debug("query:", "table", request.Table)
 	data, err := read(request.Table, request.Mode)
 	if err != nil {
 		return Response{Data: nil, Error: err}

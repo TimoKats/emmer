@@ -1,7 +1,7 @@
 package server
 
 import (
-	"fmt"
+	"log/slog"
 
 	emmerFs "github.com/TimoKats/emmer/server/fs"
 
@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -59,10 +58,10 @@ func parseResponse(w http.ResponseWriter, response Response) error {
 // tries reading data from cache, reads from filesystem as backup
 func read(filename string, mode string) (map[string]any, error) {
 	if data, ok := session.cache.data[filename]; ok && mode != "fs" {
-		log.Println("reading data from cache")
+		slog.Debug("reading data from cache")
 		return data, nil
 	}
-	log.Println("reading data from filesystem")
+	slog.Debug("reading data from filesystem")
 	data, err := session.fs.Get(filename)
 	if err == nil {
 		session.cache.data[filename] = data
@@ -74,7 +73,7 @@ func read(filename string, mode string) (map[string]any, error) {
 func write(table string, data map[string]any) error {
 	session.cache.data[table] = data
 	if session.config.commit == session.commits {
-		log.Println("writing to filesystem")
+		slog.Debug("writing to filesystem")
 		err := session.fs.Put(table, data)
 		session.commits = 0
 		if err != nil {
@@ -108,7 +107,7 @@ func updateValue(current any, new any, mode string) any {
 		} else if newOk {
 			return newInt
 		}
-		log.Printf("%s, %s both not numeric", current, new)
+		slog.Error("incompatible values", "current", current, "new", new)
 		return current
 	default:
 		return new
@@ -127,6 +126,7 @@ func insert(data map[string]any, keys []string, value any, mode string) error {
 			}
 			next, ok := current[key].(map[string]any)
 			if !ok {
+				slog.Error("can't find path in json", "key", key)
 				return errors.New("conflict at key: " + key)
 			}
 			current = next
@@ -155,6 +155,7 @@ func pop(data map[string]any, key []string) error {
 		delete(current, key[len(key)-1])
 		return nil
 	}
+	slog.Error("can't find path in json", "key", key)
 	return errors.New("key not found in table")
 }
 
@@ -201,14 +202,14 @@ func initCredentials() (string, string) {
 	username := os.Getenv("EM_USERNAME")
 	if username == "" {
 		username = "admin"
-		log.Printf("set username to: %s", username)
+		slog.Info("set credentials:", "username", username)
 	}
 	password := os.Getenv("EM_PASSWORD")
 	if password == "" {
 		b := make([]byte, 12)
 		rand.Read(b) //nolint:errcheck
 		password = base64.URLEncoding.EncodeToString(b)
-		log.Printf("set password to: %s", password)
+		slog.Info("set credentials:", "password", password)
 	}
 	return username, password
 }
@@ -228,11 +229,12 @@ func initCache() int {
 	if commitEnv != "" {
 		commitInt, err := strconv.Atoi(commitEnv)
 		if err != nil {
-			fmt.Printf("Error converting commit strategy to int: %v", err)
+			slog.Error("illegal commit strategy:", "EM_COMMIT", commitEnv)
 			return 1
 		}
 		commit = commitInt
 	}
+	slog.Debug("cache strategy set:", "commits", commit)
 	return commit
 }
 
@@ -241,13 +243,13 @@ func initAccess() int {
 	access := 2
 	accessEnv := os.Getenv("EM_ACCESS")
 	if accessEnv != "" {
-		commitInt, err := strconv.Atoi(accessEnv)
+		accessInt, err := strconv.Atoi(accessEnv)
 		if err != nil {
-			fmt.Printf("Error converting commit strategy to int: %v", err)
-			return 0
+			slog.Error("illegal access strategy:", "EM_ACCESS", accessEnv)
+			return 2
 		}
-		access = commitInt
+		access = accessInt
 	}
-	log.Printf("set access level to %d", access)
+	slog.Debug("access set:", "level", access)
 	return access
 }

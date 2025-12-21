@@ -1,18 +1,10 @@
 package server
 
 import (
-	"sync"
-
 	emmerFs "github.com/TimoKats/emmer/server/fs"
 )
 
 // session
-
-type LogBuffer struct {
-	mu    sync.Mutex
-	logs  []string
-	limit int
-}
 
 type Config struct {
 	username string
@@ -27,11 +19,10 @@ type Cache struct {
 }
 
 type Session struct {
-	commits   int
-	config    Config
-	fs        emmerFs.FileSystem
-	logBuffer *LogBuffer
-	cache     Cache
+	commits int
+	config  Config
+	fs      emmerFs.FileSystem
+	cache   Cache
 }
 
 // api
