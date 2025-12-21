@@ -9,7 +9,7 @@ type TableItem struct{}
 
 // check if table exists, if yes, remove table.
 func (TableItem) Del(request Request) Response {
-	slog.Debug("delete: %s", "table", request.Table)
+	slog.Debug("delete:", "table", request.Table)
 	// check if table exists
 	if _, err := read(request.Table, request.Mode); err != nil {
 		return Response{Data: nil, Error: err}
