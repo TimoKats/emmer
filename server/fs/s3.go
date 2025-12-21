@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io"
 	"log"
+	"log/slog"
 	"os"
 	"strings"
 
@@ -73,7 +74,7 @@ func (fs S3Fs) Del(filename string) error {
 		Key:    aws.String(filename),
 	})
 	if err == nil {
-		log.Printf("succesfully removed %s from %s", filename, fs.bucket)
+		slog.Info("delete:", "filename", filename, "bucket", fs.bucket)
 	}
 	return err
 }
@@ -103,7 +104,7 @@ func SetupS3() *S3Fs {
 	if err != nil || len(bucket) == 0 {
 		log.Panicf("can't setup S3: %s", err.Error())
 	}
-	log.Printf("selected S3 fs in %s", bucket)
+	slog.Info("selected S3 fs:", "bucket", bucket)
 	return &S3Fs{
 		client: s3.NewFromConfig(cfg),
 		bucket: bucket,

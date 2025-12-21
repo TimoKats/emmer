@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"log/slog"
 	"net/http"
 
 	server "github.com/TimoKats/emmer/server"
@@ -29,6 +30,6 @@ func main() {
 	http.HandleFunc("/api/", server.Auth(server.ApiHandler))
 
 	// start the server
-	log.Println("server is running on http://localhost" + flags.port)
+	slog.Info("started emmer:", "port", "http://localhost"+flags.port+"/")
 	log.Fatal(http.ListenAndServe(flags.port, nil))
 }

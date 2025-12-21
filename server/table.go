@@ -2,14 +2,14 @@ package server
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 )
 
 type TableItem struct{}
 
 // check if table exists, if yes, remove table.
 func (TableItem) Del(request Request) Response {
-	log.Printf("deleting table: %s", request.Table)
+	slog.Debug("delete: %s", "table", request.Table)
 	// check if table exists
 	if _, err := read(request.Table, request.Mode); err != nil {
 		return Response{Data: nil, Error: err}
@@ -23,7 +23,7 @@ func (TableItem) Del(request Request) Response {
 
 // parses payload of table, and creates it if it doesn't exist.
 func (TableItem) Add(request Request) Response {
-	log.Printf("creating table: %s", request.Table)
+	slog.Debug("create:", "table", request.Table)
 	// check if table exists
 	if _, err := read(request.Table, request.Mode); err == nil {
 		return Response{Data: nil, Error: errors.New("table already exists")}
@@ -42,7 +42,7 @@ func (TableItem) Add(request Request) Response {
 
 // queries tables (so not table contents)
 func (TableItem) Get(request Request) Response {
-	log.Printf("querying tables: %s", request.Table)
+	slog.Debug("query:", "table", request.Table)
 	// fetch all tables
 	if len(session.cache.tables) == 0 {
 		files, err := session.fs.Ls()

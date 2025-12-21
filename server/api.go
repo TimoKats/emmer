@@ -2,6 +2,7 @@ package server
 
 import (
 	"errors"
+	"log/slog"
 
 	"fmt"
 	"io"
@@ -65,8 +66,9 @@ func CommitHandler(w http.ResponseWriter, r *http.Request) {
 	for filename, data := range session.cache.data {
 		err := session.fs.Put(filename, data)
 		if err != nil {
-			log.Printf("error writing cache of %s", filename)
+			slog.Error("error writing cache:", "file", filename)
 		} else {
+			slog.Debug("cahce written to filesystem:", "file", filename)
 			fmt.Fprint(w, "cache written to filesystem") //nolint:errcheck
 		}
 	}
@@ -79,7 +81,7 @@ func Auth(next http.HandlerFunc) http.HandlerFunc {
 		if method != "GET" {
 			level++
 		}
-		log.Printf("request auth level: %d", level)
+		slog.Debug("request auth level:", "level", level)
 		return level
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
