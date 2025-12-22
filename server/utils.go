@@ -197,6 +197,23 @@ func formatFilename(filename string) string {
 	return filename
 }
 
+// returns the item to apply CRUD operations on
+func setItem(request Request) (Item, error) {
+	if len(request.Key) > 0 {
+		return EntryItem{}, nil
+	}
+	return TableItem{}, nil
+}
+
+func setAccess(method string) int {
+	level := session.config.access
+	if method != "GET" {
+		level++
+	}
+	slog.Debug("request auth:", "level", level)
+	return level
+}
+
 // generates (or) selects a username and password
 func initCredentials() (string, string) {
 	username := os.Getenv("EM_USERNAME")
@@ -234,7 +251,7 @@ func initCache() int {
 		}
 		commit = commitInt
 	}
-	slog.Debug("cache strategy set:", "commits", commit)
+	slog.Info("cache strategy set:", "commits", commit)
 	return commit
 }
 
@@ -250,6 +267,6 @@ func initAccess() int {
 		}
 		access = accessInt
 	}
-	slog.Debug("access set:", "level", access)
+	slog.Info("access set:", "level", access)
 	return access
 }

@@ -12,19 +12,9 @@ var session Session
 
 // helper function that selects the interface based on the URL path
 func ApiHandler(w http.ResponseWriter, r *http.Request) {
-
-	// returns the item to apply CRUD operations on
-	toggle := func(request Request) (Item, error) {
-		if len(request.Key) > 0 {
-			return EntryItem{}, nil
-		}
-		return TableItem{}, nil
-	}
-
-	// apply CRUD to correct item and return response
 	var response Response
 	request, parseErr := parseRequest(r)
-	item, itemErr := toggle(request)
+	item, itemErr := setItem(request)
 	if err := errors.Join(parseErr, itemErr); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest) // to response
 		return
@@ -70,20 +60,14 @@ func CommitHandler(w http.ResponseWriter, r *http.Request) {
 
 // basic auth that uses public username/password for check
 func Auth(next http.HandlerFunc) http.HandlerFunc {
-	access := func(method string) int {
-		level := session.config.access
-		if method != "GET" {
-			level++
-		}
-		slog.Debug("request auth level:", "level", level)
-		return level
-	}
 	return func(w http.ResponseWriter, r *http.Request) {
-		user, pass, ok := r.BasicAuth()
-		if (!ok || user != session.config.username || pass != session.config.password) && access(r.Method) > 1 {
-			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
+		if setAccess(r.Method) > 1 {
+			user, pass, ok := r.BasicAuth()
+			if !ok || user != session.config.username || pass != session.config.password {
+				w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
 		}
 		next(w, r)
 	}
