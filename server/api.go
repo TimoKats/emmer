@@ -63,7 +63,8 @@ func Auth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if setAccess(r.Method) > 1 {
 			user, pass, ok := r.BasicAuth()
-			if !ok || user != session.config.username || pass != session.config.password {
+			if !ok || user != session.config.username ||
+				pass != session.config.password {
 				w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return

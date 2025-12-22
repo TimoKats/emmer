@@ -43,7 +43,8 @@ func parseRequest(r *http.Request) (Request, error) {
 func parseResponse(w http.ResponseWriter, response Response) error {
 	if response.Error != nil {
 		w.Header().Set("Content-Type", "text/plain")
-		if strings.Contains(response.Error.Error(), "not found") || strings.Contains(response.Error.Error(), "404") {
+		if strings.Contains(response.Error.Error(), "not found") ||
+			strings.Contains(response.Error.Error(), "404") {
 			w.WriteHeader(404)
 		} else {
 			w.WriteHeader(500)
@@ -205,6 +206,7 @@ func setItem(request Request) (Item, error) {
 	return TableItem{}, nil
 }
 
+// access level used to authenticate requests based on method
 func setAccess(method string) int {
 	level := session.config.access
 	if method != "GET" {
