@@ -244,11 +244,11 @@ func initConnector() emmerFs.FileSystem {
 // selects the number of operations needed before a write action to fs
 func initCache() int {
 	commit := 1
-	commitEnv := os.Getenv("EM_COMMIT")
+	commitEnv := os.Getenv("EM_COMMITS")
 	if commitEnv != "" {
 		commitInt, err := strconv.Atoi(commitEnv)
 		if err != nil {
-			slog.Error("illegal commit strategy:", "EM_COMMIT", commitEnv)
+			slog.Error("illegal commit strategy:", "EM_COMMITS", commitEnv)
 			return 1
 		}
 		commit = commitInt

@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-	"log"
 	"log/slog"
 	"os"
 	"strings"
@@ -102,7 +101,8 @@ func SetupS3() *S3Fs {
 	cfg, err := config.LoadDefaultConfig(ctx)
 	bucket := os.Getenv("EM_S3_BUCKET")
 	if err != nil || len(bucket) == 0 {
-		log.Panicf("can't setup S3: %s", err.Error())
+		slog.Error("error setting up S3 connection")
+		os.Exit(1)
 	}
 	slog.Info("selected S3 fs:", "bucket", bucket)
 	return &S3Fs{
