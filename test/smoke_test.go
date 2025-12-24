@@ -87,7 +87,6 @@ func TestCache(t *testing.T) {
 	result2 := readJson(file)
 	expected := map[string]any{"foo": "test", "bar": map[string]any{"something": "else"}}
 	if result1 != nil || !jsonEqual(result2, expected) {
-		log.Println(result1, result2)
 		t.Errorf("Failed comparison when deleting recently added data.")
 	}
 }
