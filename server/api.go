@@ -12,19 +12,9 @@ var session Session
 
 // helper function that selects the interface based on the URL path
 func ApiHandler(w http.ResponseWriter, r *http.Request) {
-
-	// returns the item to apply CRUD operations on
-	toggle := func(request Request) (Item, error) {
-		if len(request.Key) > 0 {
-			return EntryItem{}, nil
-		}
-		return TableItem{}, nil
-	}
-
-	// apply CRUD to correct item and return response
 	var response Response
 	request, parseErr := parseRequest(r)
-	item, itemErr := toggle(request)
+	item, itemErr := setItem(request)
 	if err := errors.Join(parseErr, itemErr); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest) // to response
 		return
@@ -53,6 +43,10 @@ func PingHandler(w http.ResponseWriter, r *http.Request) {
 
 // write all cache to filesystem
 func CommitHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "use post", http.StatusMethodNotAllowed)
+		return
+	}
 	for filename, data := range session.cache.data {
 		err := session.fs.Put(filename, data)
 		if err != nil {
@@ -66,27 +60,27 @@ func CommitHandler(w http.ResponseWriter, r *http.Request) {
 
 // basic auth that uses public username/password for check
 func Auth(next http.HandlerFunc) http.HandlerFunc {
-	access := func(method string) int {
-		level := session.config.access
-		if method != "GET" {
-			level++
-		}
-		slog.Debug("request auth level:", "level", level)
-		return level
-	}
 	return func(w http.ResponseWriter, r *http.Request) {
-		user, pass, ok := r.BasicAuth()
-		if (!ok || user != session.config.username || pass != session.config.password) && access(r.Method) > 1 {
-			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
+		if setAccess(r.Method) > 1 {
+			user, pass, ok := r.BasicAuth()
+			if !ok || user != session.config.username ||
+				pass != session.config.password {
+				w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
 		}
 		next(w, r)
 	}
 }
 
+// reset cache (used for tests)
+func ClearCache() {
+	session.cache.data = make(map[string]map[string]any)
+}
+
 // upon init, set credentials and filesystem to use
-func init() {
+func Configure() {
 	username, password := initCredentials()
 	commits := initCache()
 	access := initAccess()
@@ -98,7 +92,6 @@ func init() {
 		access:   access,
 	}
 	// session object
-	session.cache.data = make(map[string]map[string]any)
 	session.cache.data = make(map[string]map[string]any)
 	session.fs = initConnector()
 	session.commits = 1

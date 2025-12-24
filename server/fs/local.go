@@ -3,7 +3,6 @@ package server
 import (
 	"encoding/json"
 	"errors"
-	"log"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -101,7 +100,8 @@ func SetupLocal() *LocalFS {
 	if _, err := os.Stat(folder); os.IsNotExist(err) {
 		slog.Debug("created folder", "folder", folder)
 		if err := os.Mkdir(folder, 0755); err != nil {
-			log.Panic("can't setup emmer folder")
+			slog.Error("can't setup emmer folder")
+			os.Exit(1)
 		}
 	}
 	slog.Info("selected local fs:", "folder", folder)

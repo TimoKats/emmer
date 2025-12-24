@@ -43,7 +43,8 @@ func parseRequest(r *http.Request) (Request, error) {
 func parseResponse(w http.ResponseWriter, response Response) error {
 	if response.Error != nil {
 		w.Header().Set("Content-Type", "text/plain")
-		if strings.Contains(response.Error.Error(), "not found") || strings.Contains(response.Error.Error(), "404") {
+		if strings.Contains(response.Error.Error(), "not found") ||
+			strings.Contains(response.Error.Error(), "404") {
 			w.WriteHeader(404)
 		} else {
 			w.WriteHeader(500)
@@ -197,6 +198,24 @@ func formatFilename(filename string) string {
 	return filename
 }
 
+// returns the item to apply CRUD operations on
+func setItem(request Request) (Item, error) {
+	if len(request.Key) > 0 {
+		return EntryItem{}, nil
+	}
+	return TableItem{}, nil
+}
+
+// access level used to authenticate requests based on method
+func setAccess(method string) int {
+	level := session.config.access
+	if method != "GET" {
+		level++
+	}
+	slog.Debug("request auth:", "level", level)
+	return level
+}
+
 // generates (or) selects a username and password
 func initCredentials() (string, string) {
 	username := os.Getenv("EM_USERNAME")
@@ -225,16 +244,16 @@ func initConnector() emmerFs.FileSystem {
 // selects the number of operations needed before a write action to fs
 func initCache() int {
 	commit := 1
-	commitEnv := os.Getenv("EM_COMMIT")
+	commitEnv := os.Getenv("EM_COMMITS")
 	if commitEnv != "" {
 		commitInt, err := strconv.Atoi(commitEnv)
 		if err != nil {
-			slog.Error("illegal commit strategy:", "EM_COMMIT", commitEnv)
+			slog.Error("illegal commit strategy:", "EM_COMMITS", commitEnv)
 			return 1
 		}
 		commit = commitInt
 	}
-	slog.Debug("cache strategy set:", "commits", commit)
+	slog.Info("cache strategy set:", "commits", commit)
 	return commit
 }
 
@@ -250,6 +269,6 @@ func initAccess() int {
 		}
 		access = accessInt
 	}
-	slog.Debug("access set:", "level", access)
+	slog.Info("access set:", "level", access)
 	return access
 }

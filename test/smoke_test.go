@@ -1,114 +1,96 @@
 package main
 
 import (
-	"path/filepath"
-
 	server "github.com/TimoKats/emmer/server"
 
-	"bytes"
-	"encoding/json"
 	"log"
 	"net/http"
-	"os"
 	"testing"
-	"time"
 )
 
-type RequestConfig struct {
-	Method         string
-	Endpoint       string
-	Body           string
-	ExpectedStatus int
-}
-
 func serve() {
-	// api
+	server.Configure()
 	http.HandleFunc("/ping", server.PingHandler)
 	http.HandleFunc("/api/", server.ApiHandler)
-
-	// start the server
-	log.Println("server is running on http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-// send http request and returns the status code and error
-func request(cfg RequestConfig) int {
-	// format request from object
-	req, err := http.NewRequest(cfg.Method, "http://localhost:8080"+cfg.Endpoint, bytes.NewBuffer([]byte(cfg.Body)))
-	if err != nil {
-		log.Println(err)
-		return 0
+func TestBasicPut(t *testing.T) {
+	server.ClearCache()
+	file := testFile()
+	request("PUT", "/api/test", `{"foo":1}`)
+	expected := map[string]any{"foo": 1}
+	result := readJson(file)
+	if !jsonEqual(result, expected) {
+		t.Errorf("Expected %s, got %s", expected, result)
 	}
-	// set headers / send request
-	req.Header.Set("Content-Type", "application/json")
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Println(err)
-		return 0
-	}
-	defer resp.Body.Close() //nolint:errcheck
-	return resp.StatusCode
 }
 
-// read json file at test location
-func readJson(filename string) map[string]any {
-	// get raw data
-	data := make(map[string]any)
-	file, err := os.ReadFile(filename)
-	if err != nil {
-		return data
+func TestNestedPut(t *testing.T) {
+	server.ClearCache()
+	file := testFile()
+	request("PUT", "/api/test", `{"foo":1}`)
+	request("PUT", "/api/test/1", `2`)
+	expected := map[string]any{"foo": 1, "1": 2}
+	result := readJson(file)
+	if !jsonEqual(result, expected) {
+		t.Errorf("Expected %s, got %s", expected, result)
 	}
-	// put raw data into map object
-	json.Unmarshal(file, &data) //nolint:errcheck
-	return data
 }
 
-// test if two maps are equal (loosly/stringified)
-func jsonEqual(a, b any) bool {
-	aByte, _ := json.Marshal(a) //nolint:errcheck
-	bByte, _ := json.Marshal(b) //nolint:errcheck
-	return string(aByte) == string(bByte)
-}
-
-// create path to test file
-func testFile() string {
-	var folder string
-	if folder = os.Getenv("EM_FOLDER"); folder == "" {
-		folder = filepath.Join(os.Getenv("HOME"), ".local", "share", "emmer")
+func TestAppend(t *testing.T) {
+	server.ClearCache()
+	file := testFile()
+	request("PUT", "/api/test", `{"list":1}`)
+	request("PUT", "/api/test/list?mode=append", `2`)
+	expected := map[string]any{"list": []int{1, 2}}
+	result := readJson(file)
+	if !jsonEqual(result, expected) {
+		t.Errorf("Expected %s, got %s", expected, result)
 	}
-	return filepath.Join(folder, "test.json")
 }
 
-func TestApi(t *testing.T) {
-	// start server
+func TestIncrement(t *testing.T) {
+	server.ClearCache()
+	file := testFile()
+	request("PUT", "/api/test", `{"list":1}`)
+	request("PUT", "/api/test/list?mode=increment", `2`)
+	expected := map[string]any{"list": 3}
+	result := readJson(file)
+	if !jsonEqual(result, expected) {
+		t.Errorf("Expected %s, got %s", expected, result)
+	}
+}
+
+func TestDelete(t *testing.T) {
+	server.ClearCache()
+	file := testFile()
+	request("PUT", "/api/test", `{"foo":"test"}`)
+	request("PUT", "/api/test/bar/something", `"else"`)
+	result1 := readJson(file)
+	request("DELETE", "/api/test/bar", ``)
+	expected1 := map[string]any{"foo": "test", "bar": map[string]any{"something": "else"}}
+	expected2 := map[string]any{"foo": "test"}
+	result2 := readJson(file)
+	if !jsonEqual(result1, expected1) || !jsonEqual(result2, expected2) {
+		t.Errorf("Failed comparison when deleting recently added data.")
+	}
+}
+
+func TestCache(t *testing.T) {
+	t.Setenv("EM_COMMITS", "2")
+	server.Configure()
+	file := testFile()
+	request("PUT", "/api/test", `{"foo":"test"}`)
+	result1 := readJson(file)
+	request("PUT", "/api/test/bar/something", `"else"`)
+	result2 := readJson(file)
+	expected := map[string]any{"foo": "test", "bar": map[string]any{"something": "else"}}
+	if result1 != nil || !jsonEqual(result2, expected) {
+		t.Errorf("Failed comparison when deleting recently added data.")
+	}
+}
+
+func init() {
 	go serve()
-	time.Sleep(500 * time.Millisecond)
-
-	// setup tests, files, etc
-	testFile := testFile()
-	tests := []RequestConfig{
-		{"PUT", "/api/test", `{"timo":1}`, http.StatusOK},
-		{"PUT", "/api/test/pipo", `5`, http.StatusOK},
-		{"DELETE", "/api/test", `{}`, http.StatusOK},
-	}
-	expectedData := []map[string]any{
-		{"timo": 1},
-		{"timo": 1, "pipo": 5},
-		nil,
-	}
-
-	// run tests
-	for index, test := range tests {
-		StatusCode := request(test)
-		if StatusCode != test.ExpectedStatus {
-			t.Errorf("Expected status %d, got %d", test.ExpectedStatus, StatusCode)
-		}
-		if expectedData[index] != nil {
-			result := readJson(testFile)
-			if !jsonEqual(expectedData[index], result) {
-				t.Errorf("Expected result %s, got %s", expectedData[index], result)
-			}
-		}
-	}
 }

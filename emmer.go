@@ -22,6 +22,7 @@ func getFlags() flags {
 func main() {
 	// basics
 	flags := getFlags()
+	server.Configure()
 
 	// api
 	http.HandleFunc("/ping", server.PingHandler)
