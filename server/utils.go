@@ -118,21 +118,31 @@ func updateValue(current any, new any, mode string) any {
 }
 
 // add value on nested key (e.g. [1,2,3] > map[1][2][3] = value)
-func insert(data any, keys []string, value any, mode string) error {
-	current, _ := data.(map[string]any)
-	for i, key := range keys {
-		if i == len(keys)-1 {
-			current[key] = updateValue(current[key], value, mode)
-		} else {
-			if _, ok := current[key]; !ok {
-				current[key] = make(map[string]any)
+func insert(data any, path []string, value any, mode string) error {
+	current := data
+	for index, step := range path {
+		switch d := current.(type) {
+		case map[string]any:
+			if index == len(path)-1 { // last step in path
+				d[step] = updateValue(d[step], value, mode)
+				return nil
 			}
-			next, ok := current[key].(map[string]any)
-			if !ok {
-				slog.Error("can't find path in json", "key", key)
-				return errors.New("conflict at key: " + key)
+			if _, ok := d[step]; !ok {
+				d[step] = map[string]any{}
 			}
-			current = next
+			current = d[step]
+		case []any:
+			idx, err := strconv.Atoi(step)
+			if err != nil || idx < 0 || idx >= len(d) {
+				return errors.New("invalid index: " + step)
+			}
+			if index == len(path)-1 { // last step in path
+				d[idx] = updateValue(d[idx], value, mode)
+				return nil
+			}
+			current = d[idx]
+		default:
+			return errors.New("invalid path or data type")
 		}
 	}
 	return nil
@@ -167,12 +177,16 @@ func query(data any, path []string) (any, error) {
 	if path[0] == "" {
 		return data, nil
 	}
-	for _, p := range path {
+	for _, step := range path {
 		switch d := data.(type) {
 		case map[string]any:
-			data = d[p]
+			if match, ok := d[step]; ok {
+				data = match
+			} else {
+				return nil, errors.New("path not found")
+			}
 		case []any:
-			i, err := strconv.Atoi(p) // convert string to int for slice index
+			i, err := strconv.Atoi(step) // convert string to int for slice index
 			if err != nil || i < 0 || i >= len(d) {
 				return nil, errors.New("path not found")
 			}
