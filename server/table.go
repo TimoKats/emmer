@@ -29,11 +29,11 @@ func (TableItem) Add(request Request) Response {
 		return Response{Data: nil, Error: errors.New("table already exists")}
 	}
 	// create table and add to cache
-	data, ok := request.Value.(map[string]any)
-	if !ok {
-		return Response{Data: nil, Error: errors.New("body not a mapping")}
-	}
-	err := write(request.Table, data)
+	// data, _ := request.Value.(map[string]any)
+	// if !ok {
+	// 	return Response{Data: nil, Error: errors.New("body not a mapping")}
+	// }
+	err := write(request.Table, request.Value)
 	if err == nil {
 		session.cache.tables = append(session.cache.tables, request.Table)
 	}

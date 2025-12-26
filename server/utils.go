@@ -1,6 +1,7 @@
 package server
 
 import (
+	"log"
 	"log/slog"
 
 	emmerFs "github.com/TimoKats/emmer/server/fs"
@@ -57,13 +58,13 @@ func parseResponse(w http.ResponseWriter, response Response) error {
 }
 
 // tries reading data from cache, reads from filesystem as backup
-func read(filename string, mode string) (map[string]any, error) {
+func read(filename string, mode string) (any, error) {
 	if data, ok := session.cache.data[filename]; ok && mode != "fs" {
 		slog.Debug("reading data from cache")
 		return data, nil
 	}
 	slog.Debug("reading data from filesystem")
-	data, err := session.fs.Get(filename)
+	data, err := session.fs.Get(filename) // NOTE: returns only {}
 	if err == nil {
 		session.cache.data[filename] = data
 	}
@@ -71,7 +72,8 @@ func read(filename string, mode string) (map[string]any, error) {
 }
 
 // write to cache, and potentially to filesystem (depending on commit strategy)
-func write(table string, data map[string]any) error {
+func write(table string, data any) error {
+	log.Println(data)
 	session.cache.data[table] = data
 	if session.config.commit == session.commits {
 		slog.Debug("writing to filesystem")
@@ -116,30 +118,40 @@ func updateValue(current any, new any, mode string) any {
 }
 
 // add value on nested key (e.g. [1,2,3] > map[1][2][3] = value)
-func insert(data map[string]any, keys []string, value any, mode string) error {
+func insert(data any, path []string, value any, mode string) error {
 	current := data
-	for i, key := range keys {
-		if i == len(keys)-1 {
-			current[key] = updateValue(current[key], value, mode)
-		} else {
-			if _, ok := current[key]; !ok {
-				current[key] = make(map[string]any)
+	for index, step := range path {
+		switch d := current.(type) {
+		case map[string]any:
+			if index == len(path)-1 { // last step in path
+				d[step] = updateValue(d[step], value, mode)
+				return nil
 			}
-			next, ok := current[key].(map[string]any)
-			if !ok {
-				slog.Error("can't find path in json", "key", key)
-				return errors.New("conflict at key: " + key)
+			if _, ok := d[step]; !ok {
+				d[step] = map[string]any{}
 			}
-			current = next
+			current = d[step]
+		case []any:
+			idx, err := strconv.Atoi(step)
+			if err != nil || idx < 0 || idx >= len(d) {
+				return errors.New("invalid index: " + step)
+			}
+			if index == len(path)-1 { // last step in path
+				d[idx] = updateValue(d[idx], value, mode)
+				return nil
+			}
+			current = d[idx]
+		default:
+			return errors.New("invalid path or data type")
 		}
 	}
 	return nil
 }
 
 // delete value on nested key (e.g. [1,2,3] > map[1][2][3])
-func pop(data map[string]any, key []string) error {
+func pop(data any, key []string) error {
 	keyFound := true
-	current := data
+	current, _ := data.(map[string]any)
 	for index, step := range key {
 		next, ok := current[step].(map[string]any)
 		if !ok {
@@ -161,33 +173,29 @@ func pop(data map[string]any, key []string) error {
 }
 
 // used to query on multi-keys. E.g. [1,2,3] returns map[1,2,3] > value
-func query(data map[string]any, key []string) (any, error) {
-	var current any = data
-	if len(key) == 0 || key[0] == "" {
+func query(data any, path []string) (any, error) {
+	if path[0] == "" {
 		return data, nil
 	}
-	for _, step := range key {
-		switch typed := current.(type) {
+	for _, step := range path {
+		switch d := data.(type) {
 		case map[string]any:
-			val, ok := typed[step]
-			if !ok {
-				return nil, errors.New("key " + step + " not found in map")
+			if match, ok := d[step]; ok {
+				data = match
+			} else {
+				return nil, errors.New("path not found")
 			}
-			current = val
 		case []any:
-			index, err := strconv.Atoi(step)
-			if err != nil {
-				return nil, errors.New("invalid index " + step + " for list")
+			i, err := strconv.Atoi(step) // convert string to int for slice index
+			if err != nil || i < 0 || i >= len(d) {
+				return nil, errors.New("path not found")
 			}
-			if index < 0 || index >= len(typed) {
-				return nil, errors.New("index " + step + " out of bounds")
-			}
-			current = typed[index]
+			data = d[i]
 		default:
-			return nil, errors.New("cannot descend into type")
+			return nil, errors.New("path not found")
 		}
 	}
-	return current, nil
+	return data, nil
 }
 
 // if you want to put a folder path before accessing the json, use '--'

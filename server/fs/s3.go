@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"log/slog"
 	"os"
@@ -44,25 +45,31 @@ func (fs S3Fs) Put(filename string, value any) error {
 }
 
 // reads JSON file into map[string]any variable
-func (fs S3Fs) Get(filename string) (map[string]any, error) {
+func (fs S3Fs) Get(filename string) (any, error) {
 	// fetch the object from S3
-	data := make(map[string]any)
+	mapping := make(map[string]any)
+	list := []any{}
 	filename = fs.formatS3Key(filename)
 	resp, err := fs.client.GetObject(fs.ctx, &s3.GetObjectInput{
 		Bucket: aws.String(fs.bucket),
 		Key:    aws.String(filename),
 	})
 	if err != nil {
-		return data, err
+		return nil, err
 	}
 	// read the object body
-	defer resp.Body.Close()                 //nolint:errcheck
-	bodyBytes, err := io.ReadAll(resp.Body) //nolint:errcheck
+	defer resp.Body.Close()            //nolint:errcheck
+	file, err := io.ReadAll(resp.Body) //nolint:errcheck
 	if err != nil {
-		return data, err
+		return nil, err
 	}
-	err = json.Unmarshal(bodyBytes, &data)
-	return data, err
+	// put raw data into map object
+	if err := json.Unmarshal(file, &mapping); err == nil {
+		return mapping, nil
+	} else if err := json.Unmarshal(file, &list); err == nil {
+		return list, nil
+	}
+	return nil, errors.New("error reading file") // add some logs
 }
 
 // removes entire JSON file

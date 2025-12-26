@@ -9,6 +9,6 @@ package server
 type FileSystem interface {
 	Ls() ([]string, error)
 	Put(filename string, value any) error
-	Get(filename string) (map[string]any, error)
+	Get(filename string) (any, error)
 	Del(filename string) error
 }

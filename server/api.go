@@ -76,7 +76,7 @@ func Auth(next http.HandlerFunc) http.HandlerFunc {
 
 // reset cache (used for tests)
 func ClearCache() {
-	session.cache.data = make(map[string]map[string]any)
+	session.cache.data = make(map[string]any)
 }
 
 // upon init, set credentials and filesystem to use
@@ -92,7 +92,7 @@ func Configure() {
 		access:   access,
 	}
 	// session object
-	session.cache.data = make(map[string]map[string]any)
+	session.cache.data = make(map[string]any)
 	session.fs = initConnector()
 	session.commits = 1
 }
