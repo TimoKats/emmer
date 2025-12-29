@@ -1,7 +1,6 @@
 package server
 
 import (
-	"log"
 	"log/slog"
 
 	emmerFs "github.com/TimoKats/emmer/server/fs"
@@ -73,7 +72,6 @@ func read(filename string, mode string) (any, error) {
 
 // write to cache, and potentially to filesystem (depending on commit strategy)
 func write(table string, data any) error {
-	log.Println(data)
 	session.cache.data[table] = data
 	if session.config.commit == session.commits {
 		slog.Debug("writing to filesystem")
@@ -149,27 +147,36 @@ func insert(data any, path []string, value any, mode string) error {
 }
 
 // delete value on nested key (e.g. [1,2,3] > map[1][2][3])
-func pop(data any, key []string) error {
-	keyFound := true
-	current, _ := data.(map[string]any)
-	for index, step := range key {
-		next, ok := current[step].(map[string]any)
-		if !ok {
-			if _, ok = current[step]; !ok {
-				keyFound = false
+func pop(data any, path []string) error {
+	current := data
+	for index, step := range path {
+		switch d := current.(type) {
+		case map[string]any:
+			if index == len(path)-1 { // last step
+				delete(d, step)
+				return nil
 			}
-			break
-		}
-		if index < len(key)-1 {
+			next, ok := d[step]
+			if !ok {
+				return errors.New("invalid path: " + step)
+			}
 			current = next
+		case []any:
+			idx, err := strconv.Atoi(step)
+			if err != nil || idx < 0 || idx >= len(d) {
+				return errors.New("invalid index: " + step)
+			}
+			if index == len(path)-1 { // last step
+				d[idx] = nil // json safe delete
+				return nil
+			}
+			current = d[idx]
+		default:
+			return errors.New("invalid path or data type")
 		}
 	}
-	if keyFound {
-		delete(current, key[len(key)-1])
-		return nil
-	}
-	slog.Error("can't find path in json", "key", key)
-	return errors.New("key not found in table")
+
+	return nil
 }
 
 // used to query on multi-keys. E.g. [1,2,3] returns map[1,2,3] > value
