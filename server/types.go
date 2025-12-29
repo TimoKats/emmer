@@ -15,7 +15,7 @@ type Config struct {
 
 type Cache struct {
 	tables []string
-	data   map[string]map[string]any
+	data   map[string]any
 }
 
 type Session struct {

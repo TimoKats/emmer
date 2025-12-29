@@ -57,17 +57,22 @@ func (fs LocalFS) Put(filename string, value any) error {
 }
 
 // reads JSON file into map[string]any variable
-func (fs LocalFS) Get(filename string) (map[string]any, error) {
+func (fs LocalFS) Get(filename string) (any, error) {
 	// get raw data
-	data := make(map[string]any)
+	mapping := make(map[string]any)
+	list := []any{}
 	path := fs.getPath(filename)
 	file, err := os.ReadFile(path)
 	if err != nil {
-		return data, errors.New("table " + filename + " not found")
+		return nil, errors.New("table " + filename + " not found")
 	}
 	// put raw data into map object
-	err = json.Unmarshal(file, &data)
-	return data, err
+	if err := json.Unmarshal(file, &mapping); err == nil {
+		return mapping, nil
+	} else if err := json.Unmarshal(file, &list); err == nil {
+		return list, nil
+	}
+	return nil, errors.New("error reading file") // add some logs
 }
 
 // removes entire JSON file
