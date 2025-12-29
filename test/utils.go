@@ -10,13 +10,17 @@ import (
 )
 
 // read json file at test location
-func readJson(filename string) map[string]any {
+func readJson(filename string) any {
 	data := make(map[string]any)
+	list := []any{}
 	file, err := os.ReadFile(filename)
 	if err != nil {
 		return nil
 	}
-	json.Unmarshal(file, &data) //nolint:errcheck
+	if err := json.Unmarshal(file, &data); err != nil {
+		json.Unmarshal(file, &list) //nolint:errcheck
+		return list
+	}
 	return data
 }
 

@@ -77,6 +77,23 @@ func TestDelete(t *testing.T) {
 	}
 }
 
+func TestDeleteList(t *testing.T) {
+	server.ClearCache()
+	file := testFile()
+	status := request("PUT", "/api/test", `[1,2,3,["a","b","c"]]`)
+	log.Println(status)
+	result1 := readJson(file)
+	request("DELETE", "/api/test/3", ``)
+	expected1 := []any{1, 2, 3, []string{"a", "b", "c"}}
+	expected2 := []any{1, 2, 3, nil}
+	result2 := readJson(file)
+	if !jsonEqual(result1, expected1) || !jsonEqual(result2, expected2) {
+		log.Println(result1, expected1)
+		log.Println(result2, expected2)
+		t.Errorf("Failed comparison when deleting list data.")
+	}
+}
+
 func TestCache(t *testing.T) {
 	t.Setenv("EM_COMMITS", "2")
 	server.Configure()
