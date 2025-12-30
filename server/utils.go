@@ -16,6 +16,15 @@ import (
 	"strings"
 )
 
+// used to check EM_PORT value
+func ValidPort(s string) bool {
+	port, err := strconv.Atoi(s)
+	if err != nil {
+		return false
+	}
+	return port >= 1 && port <= 65535
+}
+
 // get HTTP request and format it into Request object used by server
 func parseRequest(r *http.Request) (Request, error) {
 	request := Request{Method: r.Method, Mode: r.FormValue("mode")}
