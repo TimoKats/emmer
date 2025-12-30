@@ -5,6 +5,7 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
+	"os"
 
 	server "github.com/TimoKats/emmer/server"
 )
@@ -14,8 +15,11 @@ type flags struct {
 }
 
 func getFlags() flags {
-	port := flag.String("p", "8080", "Port.")
+	port := flag.String("p", "2112", "Port.")
 	flag.Parse()
+	if envPort := os.Getenv("EM_PORT"); server.ValidPort(envPort) {
+		port = &envPort
+	}
 	return flags{port: ":" + *port}
 }
 
