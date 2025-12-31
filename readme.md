@@ -3,9 +3,7 @@
 [![Tests](https://github.com/TimoKats/emmer/actions/workflows/test.yaml/badge.svg)](https://github.com/TimoKats/emmer/actions/workflows/test.yaml)
 [![License: EUPL](https://img.shields.io/badge/license-EUPL-blue.svg)](https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12)
 
-Self-hosted API for CRUD-ing JSON data on different filesystems (local, S3, azure blob, ...). Built for data storage in small personal projects, or mocking an API for development. Advantages are simplicity, interoperabillity (JSON files, APIs, multiple filesystems) and performance (using the cache system).   
-
-You can install emmer with the command below. After that, you can run `emmer` to start.
+Self-hosted API for CRUD-ing JSON data on different filesystems (local, S3, azure blob, ...). Built for data storage in small personal projects, or mocking an API for development. Advantages are simplicity, interoperabillity and performance (using the cache system).   
 
 ```console
 foo@bar:~$ go install github.com/TimoKats/emmer@latest
@@ -22,4 +20,7 @@ The API is based on your JSON structure. So the example below is for CRUD-ing `[
 DELETE/PUT/GET: /api/file/key1/key2/...
 ```
 
-Note, please refer to the wiki for detailed documentation and examples.
+Refer to the wiki for detailed documentation and examples. An illustration of a GET request in emmer in show below, same logic applies to DELETE and PUT requests.
+
+<center><img width="100%" alt="example-request" src="https://github.com/user-attachments/assets/f86f6e5a-f8b5-4ec8-b821-61a0e214d3dd" /></center>
+
