@@ -3,7 +3,7 @@
 [![Tests](https://github.com/TimoKats/emmer/actions/workflows/test.yaml/badge.svg)](https://github.com/TimoKats/emmer/actions/workflows/test.yaml)
 [![License: EUPL](https://img.shields.io/badge/license-EUPL-blue.svg)](https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12)
 
-Self-hosted API for CRUD-ing JSON data on different filesystems (local, S3, azure blob, ...). Built for data storage in small personal projects, or mocking an API for development. Advantages are simplicity, interoperabillity and performance (using the cache system).   
+Self-hosted API for CRUD-ing JSON files on different filesystems (local, S3, azure blob, ...). Built for data storage in small personal projects, or mocking an API for development. Advantages are simplicity, interoperabillity and performance (using the cache system).   
 
 ```console
 foo@bar:~$ go install github.com/TimoKats/emmer@latest
@@ -14,11 +14,11 @@ foo@bar:~$ emmer
 2025/09/10 16:41:20 server is running on http://localhost:8080
 ```
 
-The API is based on your JSON structure. So the example below is for CRUD-ing `[key1][key2]` in `file.json`. The value (which can be anything) is then added to the body of the request. Moreover, there are helper functions for appending and incrementing values. Refer to the wiki for detailed documentation and examples. An illustration of a GET request in emmer in show below, same logic applies to DELETE and PUT requests.
+The API is based on your JSON structure. So the example below is for CRUD-ing `[geralt][city]` in `file.json`. The value (which can be anything) is then added to the body of the request. Moreover, there are helper functions for appending and incrementing values. Refer to the wiki for detailed documentation and examples. 
 
 ```
-DELETE/PUT/GET: /api/file/key1/key2/...
+DELETE/PUT/GET: /api/users/geralt/city
 ```
 
-<center><img width="100%" alt="example-request" src="https://github.com/user-attachments/assets/f86f6e5a-f8b5-4ec8-b821-61a0e214d3dd" /></center>
+<img width="100%" alt="emmer-improved" src="https://github.com/user-attachments/assets/24ded58d-33ba-48dc-906f-d285630001eb" />
 
