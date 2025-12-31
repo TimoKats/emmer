@@ -14,13 +14,11 @@ foo@bar:~$ emmer
 2025/09/10 16:41:20 server is running on http://localhost:8080
 ```
 
-The API is based on your JSON structure. So the example below is for CRUD-ing `[key1][key2]` in `file.json`. The value (which can be anything) is then added to the body of the request. Moreover, there are helper functions for appending and incrementing values. 
+The API is based on your JSON structure. So the example below is for CRUD-ing `[key1][key2]` in `file.json`. The value (which can be anything) is then added to the body of the request. Moreover, there are helper functions for appending and incrementing values. Refer to the wiki for detailed documentation and examples. An illustration of a GET request in emmer in show below, same logic applies to DELETE and PUT requests.
 
 ```
 DELETE/PUT/GET: /api/file/key1/key2/...
 ```
-
-Refer to the wiki for detailed documentation and examples. An illustration of a GET request in emmer in show below, same logic applies to DELETE and PUT requests.
 
 <center><img width="100%" alt="example-request" src="https://github.com/user-attachments/assets/f86f6e5a-f8b5-4ec8-b821-61a0e214d3dd" /></center>
 
