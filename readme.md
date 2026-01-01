@@ -24,4 +24,6 @@ DELETE/PUT/GET: /api/users/geralt/city
 
 <img width="100%" alt="emmer-improved" src="https://github.com/user-attachments/assets/24ded58d-33ba-48dc-906f-d285630001eb" />
 
-<img width="88" height="31" alt="button(2)" style="float:right;margin-top:10px;" src="https://github.com/user-attachments/assets/197197c9-213f-4246-888f-4e7e34f800aa" />
+&nbsp;  
+
+<img width="88" height="31" alt="button(1)" src="https://github.com/user-attachments/assets/cc0ebf4f-3033-487c-bed7-7184a1f2ec9a" />
