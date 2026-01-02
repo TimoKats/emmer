@@ -25,6 +25,17 @@ func ValidPort(s string) bool {
 	return port >= 1 && port <= 65535
 }
 
+// returns true if the error message implies a bad request error. Else 500.
+func errorBadRequest(message string) bool {
+	indicators := []string{"not found", "404", "invalid path", "invalid index"}
+	for _, indicator := range indicators {
+		if strings.Contains(message, indicator) {
+			return true
+		}
+	}
+	return false
+}
+
 // get HTTP request and format it into Request object used by server
 func parseRequest(r *http.Request) (Request, error) {
 	request := Request{Method: r.Method, Mode: r.FormValue("mode")}
@@ -35,6 +46,9 @@ func parseRequest(r *http.Request) (Request, error) {
 		if len(urlItems) > 1 {
 			request.Key = urlItems[1:]
 		}
+	}
+	if strings.Contains(urlPath, "..") {
+		return request, errors.New("invalid path: parent directory")
 	}
 	// parse request body
 	payload, err := io.ReadAll(r.Body)
@@ -52,9 +66,8 @@ func parseRequest(r *http.Request) (Request, error) {
 func parseResponse(w http.ResponseWriter, response Response) error {
 	if response.Error != nil {
 		w.Header().Set("Content-Type", "text/plain")
-		if strings.Contains(response.Error.Error(), "not found") ||
-			strings.Contains(response.Error.Error(), "404") {
-			w.WriteHeader(404)
+		if errorBadRequest(response.Error.Error()) {
+			w.WriteHeader(400)
 		} else {
 			w.WriteHeader(500)
 		}

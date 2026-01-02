@@ -108,6 +108,13 @@ func TestCache(t *testing.T) {
 	}
 }
 
+func TestBadRequest(t *testing.T) {
+	status := request("PUT", "/api/test--..--test", `{"foo":"test"}`)
+	if status != 400 {
+		t.Errorf("Request to parent directory did not get filtered.")
+	}
+}
+
 func init() {
 	go serve()
 }
