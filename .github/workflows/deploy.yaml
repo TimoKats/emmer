@@ -1,15 +1,9 @@
 name: deploy
 
-# on:
-#   push:
-#     tags:
-#       - '*'
-
 on:
-  pull_request:
-      types: [opened, reopened, synchronize]
-      branches:
-          - main
+  push:
+    tags:
+      - '*'
 
 
 jobs:
@@ -29,9 +23,9 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # - name: extract tag name
-      #   id: tag
-      #   run: echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      - name: extract tag name
+        id: tag
+        run: echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
       - name: build and push
         uses: docker/build-push-action@v5
@@ -40,4 +34,4 @@ jobs:
           file: .docker/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/emmer:dev
+            ${{ secrets.DOCKERHUB_USERNAME }}/emmer:${{ steps.tag.outputs.TAG }}
