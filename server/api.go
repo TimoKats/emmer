@@ -58,7 +58,7 @@ func CommitHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// basic auth that uses public username/password for check
+// basic auth that uses public username/password for check (and if it's needed)
 func Auth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if setAccess(r.Method) > 1 {
