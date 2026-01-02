@@ -1,0 +1,16 @@
+# golang base image, build emmer
+FROM golang:1.23-alpine AS builder
+WORKDIR /app
+COPY ./go.mod ./go.sum ./
+RUN go mod download
+COPY .. .
+RUN go build -o emmer .
+
+# add (non-root) user, expose correct port
+FROM alpine:latest
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+COPY --from=builder /app/emmer /usr/local/bin/emmer
+USER appuser
+EXPOSE 2112
+
+ENTRYPOINT ["emmer"]
