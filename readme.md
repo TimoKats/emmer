@@ -22,9 +22,10 @@ The API is based on your JSON structure. So the example below is for CRUD-ing `[
 ```
 DELETE/PUT/GET: /api/users/geralt/city
 ```
-
-<img width="100%" alt="emmer-improved" src="https://github.com/user-attachments/assets/24ded58d-33ba-48dc-906f-d285630001eb" />
-
 &nbsp;  
+
+<div align="center" >
+  <img width="70%"  alt="emmer drawio" src="https://github.com/user-attachments/assets/9bd584e1-fa81-432a-9455-11b3bf6b9e2a" />
+</div>
 
 <img width="88" height="31" alt="button(1)" src="https://github.com/user-attachments/assets/cc0ebf4f-3033-487c-bed7-7184a1f2ec9a" />
