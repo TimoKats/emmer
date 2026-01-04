@@ -6,7 +6,7 @@
 
 
 
-Self-hosted API for CRUD-ing JSON files on different filesystems (local, S3, azure blob, ...). Built for data storage in small personal projects, or mocking an API for development. Advantages are simplicity, interoperabillity and performance (using the cache system).   
+Self-hosted API for CRUD-ing JSON files on different filesystems (local, S3, MinIO, ...). Built for data storage in small personal projects, or mocking an API for development. Advantages are simplicity, interoperabillity and performance (using the cache system).   
 
 ```console
 foo@bar:~$ go install github.com/TimoKats/emmer@latest
@@ -17,7 +17,7 @@ foo@bar:~$ emmer
 2025/09/10 16:41:20 server is running on http://localhost:8080
 ```
 
-The API is based on your JSON structure. So the example below is for CRUD-ing `[geralt][city]` in `file.json`. The value (which can be anything) is then added to the body of the request. Moreover, there are helper functions for appending and incrementing values. Refer to the wiki for detailed documentation and examples. 
+In summary, he API is based on your JSON structure. So the example below is for CRUD-ing `[geralt][city]` in `file.json`. The value (which can be anything) is then added to the body of the request. Moreover, there are helper functions for appending and incrementing values. Refer to the wiki for detailed documentation and examples. 
 
 ```
 DELETE/PUT/GET: /api/users/geralt/city
@@ -25,7 +25,7 @@ DELETE/PUT/GET: /api/users/geralt/city
 &nbsp;  
 
 <div align="center" >
-  <img width="70%"  alt="emmer drawio" src="https://github.com/user-attachments/assets/9bd584e1-fa81-432a-9455-11b3bf6b9e2a" />
+  <img width="100%"  alt="emmer drawio" src="https://github.com/user-attachments/assets/9bd584e1-fa81-432a-9455-11b3bf6b9e2a" />
 </div>
 
-<img width="88" height="31" alt="button(1)" src="https://github.com/user-attachments/assets/cc0ebf4f-3033-487c-bed7-7184a1f2ec9a" />
+<!-- <img width="88" height="31" alt="button(1)" src="https://github.com/user-attachments/assets/cc0ebf4f-3033-487c-bed7-7184a1f2ec9a" /> -->
