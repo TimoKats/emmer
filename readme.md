@@ -25,7 +25,8 @@ DELETE/PUT/GET: /api/users/geralt/city
 &nbsp;  
 
 <div align="center" >
-  <img width="100%"  alt="emmer drawio" src="https://github.com/user-attachments/assets/9bd584e1-fa81-432a-9455-11b3bf6b9e2a" />
+  <!-- <img width="100%"  alt="emmer drawio" src="https://github.com/user-attachments/assets/9bd584e1-fa81-432a-9455-11b3bf6b9e2a" /> -->
+<img width="100%" alt="big-emmer-1 drawio" src="https://github.com/user-attachments/assets/3162486d-d77d-4026-8853-fca6cecbd87c" />  
 </div>
 
 <!-- <img width="88" height="31" alt="button(1)" src="https://github.com/user-attachments/assets/cc0ebf4f-3033-487c-bed7-7184a1f2ec9a" /> -->
