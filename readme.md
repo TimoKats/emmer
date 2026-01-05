@@ -6,7 +6,7 @@
 
 
 
-Self-hosted API for CRUD-ing JSON files on different filesystems (local, S3, MinIO, ...). Built for data storage in small personal projects, or mocking an API for development. Advantages are simplicity, interoperabillity and performance (using the cache system).   
+Self-hosted API for CRUD-ing JSON files on storage providers (local, S3, MinIO, ...). Built for data storage in small personal projects, or mocking an API for development. Advantages are simplicity, interoperabillity and performance (using the cache system). More information is available in the Wiki.  
 
 ```console
 foo@bar:~$ go install github.com/TimoKats/emmer@latest
