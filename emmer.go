@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"log"
 	"log/slog"
 	"net/http"
@@ -10,30 +9,25 @@ import (
 	server "github.com/TimoKats/emmer/server"
 )
 
-type flags struct {
-	port string
-}
-
-func getFlags() flags {
-	port := flag.String("p", "2112", "Port.")
-	flag.Parse()
-	if envPort := os.Getenv("EM_PORT"); server.ValidPort(envPort) {
-		port = &envPort
+func getPort() string {
+	port := os.Getenv("EM_PORT")
+	if !server.ValidPort(port) {
+		port = "8080"
 	}
-	return flags{port: ":" + *port}
+	return ":" + port
 }
 
 func main() {
 	// basics
-	flags := getFlags()
-	server.Configure()
+	port := getPort()
 
 	// api
+	server.Configure()
 	http.HandleFunc("/ping", server.PingHandler)
 	http.HandleFunc("/commit", server.Auth(server.CommitHandler))
 	http.HandleFunc("/api/", server.Auth(server.ApiHandler))
 
 	// start the server
-	slog.Info("started emmer:", "port", "http://localhost"+flags.port+"/")
-	log.Fatal(http.ListenAndServe(flags.port, nil))
+	slog.Info("started emmer:", "port", "http://localhost"+port+"/api")
+	log.Fatal(http.ListenAndServe(port, nil))
 }
