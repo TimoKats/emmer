@@ -258,14 +258,14 @@ func initCredentials() (string, string) {
 	username := os.Getenv("EM_USERNAME")
 	if username == "" {
 		username = "admin"
-		slog.Info("set credentials:", "username", username)
+		slog.Warn("set credentials:", "username", username)
 	}
 	password := os.Getenv("EM_PASSWORD")
 	if password == "" {
 		b := make([]byte, 12)
 		rand.Read(b) //nolint:errcheck
 		password = base64.URLEncoding.EncodeToString(b)
-		slog.Info("set credentials:", "password", password)
+		slog.Warn("set credentials:", "password", password)
 	}
 	return username, password
 }
