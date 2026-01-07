@@ -105,7 +105,7 @@ func SetupLocal() *LocalFS {
 	if _, err := os.Stat(folder); os.IsNotExist(err) {
 		slog.Debug("created folder", "folder", folder)
 		if err := os.Mkdir(folder, 0755); err != nil {
-			slog.Error("can't setup emmer folder")
+			slog.Error("can't create emmer folder:", "path", folder)
 			os.Exit(1)
 		}
 	}
