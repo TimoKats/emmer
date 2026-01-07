@@ -12,7 +12,7 @@ import (
 func getPort() string {
 	port := os.Getenv("EM_PORT")
 	if !server.ValidPort(port) {
-		port = "2113"
+		port = "2112"
 	}
 	return ":" + port
 }
