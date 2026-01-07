@@ -32,5 +32,5 @@ jobs:
           context: .
           file: .docker/Dockerfile
           push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/emmer:${{ steps.tag.outputs.TAG }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/emmer:${{ steps.tag.outputs.TAG }}
+          build-args: TAG=${{ steps.tag.outputs.TAG }}

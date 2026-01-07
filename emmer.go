@@ -17,9 +17,19 @@ func getPort() string {
 	return ":" + port
 }
 
+func getVersion() string {
+	version := os.Getenv("EM_VERSION")
+	if len(version) == 0 {
+		return "unknown"
+	}
+	return version
+}
+
 func main() {
 	// basics
 	port := getPort()
+	version := getVersion()
+	url := "http://localhost" + port + "/api"
 
 	// api
 	server.Configure()
@@ -28,6 +38,6 @@ func main() {
 	http.HandleFunc("/api/", server.Auth(server.ApiHandler))
 
 	// start the server
-	slog.Info("started emmer:", "port", "http://localhost"+port+"/api")
+	slog.Info("started emmer:", "url", url, "version", version)
 	log.Fatal(http.ListenAndServe(port, nil))
 }

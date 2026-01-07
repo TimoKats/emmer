@@ -13,6 +13,7 @@ COPY --from=builder /app/emmer /usr/local/bin/emmer
 RUN mkdir /data
 RUN chown -R appuser:appgroup /data
 ENV EM_FOLDER=/data
+ENV EM_VERSION=${TAG}
 USER appuser
 EXPOSE 2112
 
