@@ -8,6 +8,7 @@ RUN go build -o emmer .
 
 # add (non-root) user, expose correct port
 FROM alpine:3.23
+ARG TAG
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 COPY --from=builder /app/emmer /usr/local/bin/emmer
 RUN mkdir /data
