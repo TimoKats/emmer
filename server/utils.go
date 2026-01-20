@@ -25,15 +25,21 @@ func ValidPort(s string) bool {
 	return port >= 1 && port <= 65535
 }
 
-// returns true if the error message implies a bad request error. Else 500.
-func errorBadRequest(message string) bool {
-	indicators := []string{"not found", "404", "invalid path", "invalid index"}
-	for _, indicator := range indicators {
+// returns error code based on error message text, default 500.
+func getErrorCode(message string) int {
+	notFound := []string{"not found", "404"}
+	badRequest := []string{"invalid path", "invalid index", "incompatible"}
+	for _, indicator := range notFound {
 		if strings.Contains(message, indicator) {
-			return true
+			return 404
 		}
 	}
-	return false
+	for _, indicator := range badRequest {
+		if strings.Contains(message, indicator) {
+			return 400
+		}
+	}
+	return 500
 }
 
 // get HTTP request and format it into Request object used by server
@@ -66,11 +72,8 @@ func parseRequest(r *http.Request) (Request, error) {
 func parseResponse(w http.ResponseWriter, response Response) error {
 	if response.Error != nil {
 		w.Header().Set("Content-Type", "text/plain")
-		if errorBadRequest(response.Error.Error()) {
-			w.WriteHeader(400)
-		} else {
-			w.WriteHeader(500)
-		}
+		code := getErrorCode(response.Error.Error())
+		w.WriteHeader(code)
 		return json.NewEncoder(w).Encode(response.Error.Error())
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -108,16 +111,16 @@ func write(table string, data any) error {
 }
 
 // creates new value based on parameter and mode (add error return)
-func updateValue(current any, new any, mode string) any {
+func updateValue(current any, new any, mode string) (any, error) {
 	switch mode {
 	case "append":
 		// if it's a slice we append, else we create a new slice to append to.
 		if tempSlice, ok := current.([]any); ok {
-			return append(tempSlice, new)
+			return append(tempSlice, new), nil
 		} else if current == nil {
-			return []any{new}
+			return []any{new}, nil
 		}
-		return append([]any{current}, new)
+		return append([]any{current}, new), nil
 	case "increment":
 		// if it's an increment, either increase, or replace.
 		if new == nil {
@@ -126,14 +129,14 @@ func updateValue(current any, new any, mode string) any {
 		currentInt, currentOk := current.(float64)
 		newInt, newOk := new.(float64)
 		if currentOk && newOk {
-			return currentInt + newInt
+			return currentInt + newInt, nil
 		} else if newOk {
-			return newInt
+			return newInt, errors.New("incompatible values")
 		}
 		slog.Error("incompatible values", "current", current, "new", new)
-		return current
+		return current, errors.New("incompatible values")
 	default:
-		return new
+		return new, nil
 	}
 }
 
@@ -144,8 +147,9 @@ func insert(data any, path []string, value any, mode string) error {
 		switch d := current.(type) {
 		case map[string]any:
 			if index == len(path)-1 { // last step in path
-				d[step] = updateValue(d[step], value, mode)
-				return nil
+				temp, err := updateValue(d[step], value, mode)
+				d[step] = temp
+				return err
 			}
 			if _, ok := d[step]; !ok {
 				d[step] = map[string]any{}
@@ -157,8 +161,9 @@ func insert(data any, path []string, value any, mode string) error {
 				return errors.New("invalid index: " + step)
 			}
 			if index == len(path)-1 { // last step in path
-				d[idx] = updateValue(d[idx], value, mode)
-				return nil
+				temp, err := updateValue(d[idx], value, mode)
+				d[idx] = temp
+				return err
 			}
 			current = d[idx]
 		default:
