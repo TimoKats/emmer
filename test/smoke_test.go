@@ -80,8 +80,7 @@ func TestDelete(t *testing.T) {
 func TestDeleteList(t *testing.T) {
 	server.ClearCache()
 	file := testFile()
-	status := request("PUT", "/api/test", `[1,2,3,["a","b","c"]]`)
-	log.Println(status)
+	request("PUT", "/api/test", `[1,2,3,["a","b","c"]]`)
 	result1 := readJson(file)
 	request("DELETE", "/api/test/3", ``)
 	expected1 := []any{1, 2, 3, []string{"a", "b", "c"}}
@@ -112,6 +111,24 @@ func TestBadRequest(t *testing.T) {
 	status := request("PUT", "/api/test--..--test", `{"foo":"test"}`)
 	if status != 400 {
 		t.Errorf("Request to parent directory did not get filtered.")
+	}
+}
+
+func TestBadIncrement(t *testing.T) {
+	server.ClearCache()
+	request("PUT", "/api/test", `{"foo":"test"}`)
+	status := request("PUT", "/api/test/foo?mode=increment", `2`)
+	if status != 400 {
+		t.Errorf("Bad increment request did not get the correct error code.")
+	}
+}
+
+func TestNotFound(t *testing.T) {
+	server.ClearCache()
+	request("PUT", "/api/test", `{"foo":"test"}`)
+	status := request("GET", "/api/test/something", `2`)
+	if status != 404 {
+		t.Errorf("Not found dit not get the correct error code.")
 	}
 }
 
