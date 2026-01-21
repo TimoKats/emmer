@@ -1,4 +1,4 @@
-name: deploy dev version
+name: deploy (dev)
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    environment: approval
     steps:
       - name: checkout code
         uses: actions/checkout@v4
