@@ -20,7 +20,7 @@ jobs:
   
   build:
     runs-on: ubuntu-latest
-    requires: approve-deployment
+    needs: approve-deployment
     steps:
       - name: checkout code
         uses: actions/checkout@v4
