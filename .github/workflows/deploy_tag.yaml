@@ -1,4 +1,4 @@
-name: deploy tagged version
+name: deploy (tag)
 
 on:
   push:
