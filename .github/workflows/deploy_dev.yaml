@@ -12,8 +12,11 @@ on:
 
 jobs:
 
-  approve-deployment:
-    type: approval
+  wait-for-approval:
+    runs-on: ubuntu-latest
+    environment: approval
+    steps:
+      - run: echo "Waiting for manual approval..."
   
   build:
     runs-on: ubuntu-latest
