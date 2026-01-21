@@ -12,7 +12,7 @@ on:
 
 jobs:
 
-  wait-for-approval:
+  approve-deployment:
     runs-on: ubuntu-latest
     environment: approval
     steps:
