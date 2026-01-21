@@ -11,17 +11,13 @@ on:
           - main
 
 jobs:
-  approval:
-    runs-on: ubuntu-latest
-    environment:
-      name: approval
-      url: https://github.com
-    steps:
-      - name: Wait for approval
-        run: echo "Waiting for approval..."
+
+  approve-deployment:
+    type: approval
+  
   build:
     runs-on: ubuntu-latest
-
+    requires: approve-deployment
     steps:
       - name: checkout code
         uses: actions/checkout@v4
