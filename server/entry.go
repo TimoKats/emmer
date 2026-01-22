@@ -2,6 +2,7 @@ package server
 
 import (
 	"log/slog"
+	"strings"
 )
 
 type EntryItem struct{}
@@ -30,11 +31,17 @@ func (EntryItem) Add(request Request) Response {
 	// if it doesn't exist, create it. still errors? return error.
 	data, err := read(request.Table, request.Mode)
 	if err != nil {
-		return Response{Data: nil, Error: err}
+		if strings.Contains(err.Error(), "not found") {
+			slog.Warn("autocreate table", "name", request.Table)
+			err = write(request.Table, nil)
+			data = make(map[string]any)
+		}
+		if err != nil {
+			return Response{Data: nil, Error: err}
+		}
 	}
 	// update json, and update cache
-	err = insert(data, request.Key, request.Value, request.Mode)
-	if err != nil {
+	if err = insert(data, request.Key, request.Value, request.Mode); err != nil {
 		return Response{Data: nil, Error: err}
 	}
 	if err = write(request.Table, data); err != nil {
