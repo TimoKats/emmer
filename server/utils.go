@@ -28,7 +28,7 @@ func ValidPort(s string) bool {
 // returns error code based on error message text, default 500.
 func getErrorCode(message string) int {
 	notFound := []string{"not found", "404"}
-	badRequest := []string{"invalid path", "invalid index", "incompatible"}
+	badRequest := []string{"invalid path", "invalid index", "incompatible", "table already exists"}
 	for _, indicator := range notFound {
 		if strings.Contains(message, indicator) {
 			return 404
@@ -97,6 +97,9 @@ func read(filename string, mode string) (any, error) {
 
 // write to cache, and potentially to filesystem (depending on commit strategy)
 func write(table string, data any) error {
+	if data == nil {
+		data = make(map[string]any)
+	}
 	session.cache.data[table] = data
 	if session.config.commit == session.commits {
 		slog.Debug("writing to filesystem")

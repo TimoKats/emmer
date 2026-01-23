@@ -25,16 +25,16 @@ func (TableItem) Del(request Request) Response {
 // parses payload of table, and creates it if it doesn't exist.
 func (TableItem) Add(request Request) Response {
 	slog.Debug("create:", "table", request.Table)
-	// check if table exists
-	if _, err := read(request.Table, request.Mode); err == nil {
+	// check if table already exists
+	_, err := read(request.Table, request.Mode)
+	if err == nil {
 		return Response{Data: nil, Error: errors.New("table already exists")}
 	}
-	// create table and add to cache
 	if _, err := json.Marshal(request.Value); err != nil {
 		return Response{Data: nil, Error: errors.New("body not valid json")}
 	}
-	err := write(request.Table, request.Value)
-	if err == nil {
+	// create table
+	if err = write(request.Table, request.Value); err == nil {
 		session.cache.tables = append(session.cache.tables, request.Table)
 	}
 	return Response{Data: "added " + request.Table, Error: err}

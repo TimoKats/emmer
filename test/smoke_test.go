@@ -123,12 +123,24 @@ func TestBadIncrement(t *testing.T) {
 	}
 }
 
+func TestAutoCreateTable(t *testing.T) {
+	server.ClearCache()
+	file := testFile()
+	request("PUT", "/api/test/something", `2`)
+	expected := map[string]any{"something": 2}
+	result := readJson(file)
+	if !jsonEqual(result, expected) {
+		t.Errorf("Expected %s, got %s", expected, result)
+	}
+}
+
 func TestNotFound(t *testing.T) {
 	server.ClearCache()
+	testFile()
 	request("PUT", "/api/test", `{"foo":"test"}`)
 	status := request("GET", "/api/test/something", `2`)
 	if status != 404 {
-		t.Errorf("Not found dit not get the correct error code.")
+		t.Errorf("Not found did not get the correct error code.")
 	}
 }
 

@@ -2,12 +2,11 @@ name: deploy (dev)
 
 on:
   push:
-    branches: main
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: approval
     steps:
       - name: checkout code
         uses: actions/checkout@v4
