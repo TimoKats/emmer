@@ -10,12 +10,10 @@ type EntryItem struct{}
 // fetches path for table name, then removes key from JSON.
 func (EntryItem) Del(request Request) Response {
 	slog.Debug("delete:", "key", request.Key, "table", request.Table)
-	// read file from cache/fs
 	data, err := read(request.Table, request.Mode)
 	if err != nil {
 		return Response{Data: nil, Error: err}
 	}
-	// update contents, and write to cache/fs
 	if err = pop(data, request.Key); err != nil {
 		return Response{Data: nil, Error: err}
 	}
@@ -33,6 +31,9 @@ func (EntryItem) Add(request Request) Response {
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
 			slog.Warn("autocreate table", "name", request.Table)
+			if len(session.cache.tables) > 0 {
+				session.cache.tables = append(session.cache.tables, request.Table)
+			}
 			err = write(request.Table, nil)
 			data = make(map[string]any)
 		}

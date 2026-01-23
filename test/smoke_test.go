@@ -123,6 +123,17 @@ func TestBadIncrement(t *testing.T) {
 	}
 }
 
+func TestAutoCreateTable(t *testing.T) {
+	server.ClearCache()
+	file := testFile()
+	request("PUT", "/api/test/something", `2`)
+	expected := map[string]any{"something": 2}
+	result := readJson(file)
+	if !jsonEqual(result, expected) {
+		t.Errorf("Expected %s, got %s", expected, result)
+	}
+}
+
 func TestNotFound(t *testing.T) {
 	server.ClearCache()
 	request("PUT", "/api/test", `{"foo":"test"}`)
