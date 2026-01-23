@@ -144,6 +144,15 @@ func TestNotFound(t *testing.T) {
 	}
 }
 
+func TestClearCache(t *testing.T) {
+	request("DELETE", "/cache", ``)
+	request("PUT", "/api/test", `{"foo":"test"}`)
+	status := request("GET", "/api/test", ``)
+	if status != 200 {
+		t.Errorf("Cache reset did not work properly.")
+	}
+}
+
 func init() {
 	go serve()
 }
