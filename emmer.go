@@ -35,6 +35,7 @@ func main() {
 	server.Configure()
 	http.HandleFunc("/ping", server.PingHandler)
 	http.HandleFunc("/commit", server.Auth(server.CommitHandler))
+	http.HandleFunc("/cache", server.Auth(server.CacheHandler))
 	http.HandleFunc("/api/", server.Auth(server.ApiHandler))
 
 	// start the server

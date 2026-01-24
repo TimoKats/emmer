@@ -69,7 +69,7 @@ func (fs S3Fs) Get(filename string) (any, error) {
 	} else if err := json.Unmarshal(file, &list); err == nil {
 		return list, nil
 	}
-	return nil, errors.New("error reading file") // add some logs
+	return nil, errors.New("error reading file, is it json?")
 }
 
 // removes entire JSON file

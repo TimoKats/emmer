@@ -58,6 +58,14 @@ func CommitHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func CacheHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "DELETE" {
+		http.Error(w, "use delete to remove cache", http.StatusMethodNotAllowed)
+		return
+	}
+	session.cache.data = make(map[string]any)
+}
+
 // basic auth that uses public username/password for check (and if it's needed)
 func Auth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -81,6 +89,7 @@ func ClearCache() {
 
 // upon init, set credentials and filesystem to use
 func Configure() {
+	initLogger()
 	username, password := initCredentials()
 	commits := initCache()
 	access := initAccess()
