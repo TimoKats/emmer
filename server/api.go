@@ -92,6 +92,7 @@ func Configure() {
 	username, password := initCredentials()
 	commits := initCache()
 	access := initAccess()
+	initLogger()
 	// create config object
 	session.config = Config{
 		username: username,

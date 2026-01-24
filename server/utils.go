@@ -317,3 +317,13 @@ func initAccess() int {
 	slog.Info("access set:", "level", access)
 	return access
 }
+
+func initLogger() {
+	if os.Getenv("EM_DEBUGMODE") == "true" {
+		slog.Warn("starting debug mode...")
+		h := slog.NewJSONHandler(
+			os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug},
+		)
+		slog.SetDefault(slog.New(h))
+	}
+}
