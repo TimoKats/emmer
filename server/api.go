@@ -89,10 +89,10 @@ func ClearCache() {
 
 // upon init, set credentials and filesystem to use
 func Configure() {
+	initLogger()
 	username, password := initCredentials()
 	commits := initCache()
 	access := initAccess()
-	initLogger()
 	// create config object
 	session.config = Config{
 		username: username,
