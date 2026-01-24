@@ -6,7 +6,7 @@
 
 
 
-Self-hosted API for CRUD-ing JSON files on storage providers (local, S3, MinIO, ...). Built for data storage in small personal projects, or mocking an API for development. Advantages are simplicity, interoperabillity and performance (using the cache system). More information is available in the Wiki.  
+Self-hosted API for CRUD-ing JSON files on storage providers (local, S3, MinIO, ...). Built for data storage in small personal projects, or mocking an API for development. Advantages are simplicity, interoperabillity and performance (using the cache system). More information is available in the [wiki](https://github.com/TimoKats/emmer/wiki).  
 
 ```console
 foo@bar:~$ go install github.com/TimoKats/emmer@latest
@@ -14,10 +14,10 @@ foo@bar:~$ emmer
 2025/09/10 16:41:20 set username to: admin
 2025/09/10 16:41:20 set password to: ************
 2025/09/10 16:41:20 selected local fs in: /home/user/.emmer
-2025/09/10 16:41:20 server is running on http://localhost:8080
+2025/09/10 16:41:20 server is running on http://localhost:2112
 ```
 
-In summary, he API is based on your JSON structure. So the example below is for CRUD-ing `[geralt][city]` in `file.json`. The value (which can be anything) is then added to the body of the request. Moreover, there are helper functions for appending and incrementing values. Refer to the wiki for detailed documentation and examples. 
+The API is based on your JSON structure. So, the example below is for CRUD-ing `[geralt][city]` in `file.json`. The value (which can be anything) is then added to the body of the request. Moreover, there are helper functions for appending and incrementing values. Refer to the wiki for detailed documentation and examples. 
 
 ```
 DELETE/PUT/GET: /api/users/geralt/city
