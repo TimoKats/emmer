@@ -280,9 +280,6 @@ func initCredentials() (string, string) {
 
 // selects the connector (fs interface) based on env variable
 func initConnector() emmerFs.FileSystem {
-	if os.Getenv("EM_CONNECTOR") == "S3" {
-		return emmerFs.SetupS3()
-	}
 	return emmerFs.SetupLocal()
 }
 
