@@ -58,6 +58,7 @@ func CommitHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// clears cache memory, only accepts delete requests
 func CacheHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "DELETE" {
 		http.Error(w, "use delete to remove cache", http.StatusMethodNotAllowed)
