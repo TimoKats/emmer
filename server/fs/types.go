@@ -4,7 +4,7 @@
 
 package server
 
-type FileSystem interface {
+type File interface {
 	Ls() ([]string, error)
 	Put(filename string, value any) error
 	Get(filename string) (any, error)

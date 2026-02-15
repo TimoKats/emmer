@@ -21,7 +21,7 @@ type Cache struct {
 type Session struct {
 	commits int
 	config  Config
-	fs      emmerFs.FileSystem
+	fs      emmerFs.File
 	cache   Cache
 }
 

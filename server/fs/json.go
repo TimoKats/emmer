@@ -10,12 +10,12 @@ import (
 	"strings"
 )
 
-type LocalFS struct {
+type Json struct {
 	Folder string
 }
 
 // takes filename and returns full path + extension to json file
-func (fs LocalFS) getPath(filename string) string {
+func (fs Json) getPath(filename string) string {
 	return filepath.Join(fs.Folder, filename) + ".json"
 }
 
@@ -40,7 +40,7 @@ func selectFolder() string {
 }
 
 // creates empty (or prefilled) JSON file at path
-func (fs LocalFS) Put(filename string, value any) error {
+func (fs Json) Put(filename string, value any) error {
 	path := fs.getPath(filename)
 	f, err := os.Create(path)
 	if err != nil {
@@ -57,7 +57,7 @@ func (fs LocalFS) Put(filename string, value any) error {
 }
 
 // reads JSON file into map[string]any variable
-func (fs LocalFS) Get(filename string) (any, error) {
+func (fs Json) Get(filename string) (any, error) {
 	// get raw data
 	mapping := make(map[string]any)
 	list := []any{}
@@ -76,13 +76,13 @@ func (fs LocalFS) Get(filename string) (any, error) {
 }
 
 // removes entire JSON file
-func (fs LocalFS) Del(filename string) error {
+func (fs Json) Del(filename string) error {
 	path := fs.getPath(filename)
 	return os.Remove(path)
 }
 
 // list json files in fs folder
-func (fs LocalFS) Ls() ([]string, error) {
+func (fs Json) Ls() ([]string, error) {
 	files, err := os.ReadDir(fs.Folder)
 	result := []string{}
 	if err != nil {
@@ -99,7 +99,7 @@ func (fs LocalFS) Ls() ([]string, error) {
 }
 
 // creates new localFS instance with settings applied
-func SetupLocal() *LocalFS {
+func SetupLocal() *Json {
 	folder := selectFolder()
 	// create selected folder if it doesn't exist
 	if _, err := os.Stat(folder); os.IsNotExist(err) {
@@ -110,7 +110,7 @@ func SetupLocal() *LocalFS {
 		}
 	}
 	slog.Info("selected local fs:", "folder", folder)
-	return &LocalFS{
+	return &Json{
 		Folder: folder,
 	}
 }

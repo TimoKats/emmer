@@ -279,7 +279,7 @@ func initCredentials() (string, string) {
 }
 
 // selects the connector (fs interface) based on env variable
-func initConnector() emmerFs.FileSystem {
+func initConnector() emmerFs.File {
 	return emmerFs.SetupLocal()
 }
 
