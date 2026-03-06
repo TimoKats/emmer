@@ -280,7 +280,7 @@ func initCredentials() (string, string) {
 
 // selects the connector (fs interface) based on env variable
 func initConnector() emmerFs.File {
-	return emmerFs.SetupLocal()
+	return emmerFs.SetupJSON()
 }
 
 // selects the number of operations needed before a write action to fs

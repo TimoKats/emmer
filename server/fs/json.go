@@ -78,7 +78,7 @@ func (fs Json) Ls() ([]string, error) {
 }
 
 // creates new localFS instance with settings applied
-func SetupLocal() *Json {
+func SetupJSON() *Json {
 	folder := selectFolder()
 	// create selected folder if it doesn't exist
 	if _, err := os.Stat(folder); os.IsNotExist(err) {
@@ -88,7 +88,7 @@ func SetupLocal() *Json {
 			os.Exit(1)
 		}
 	}
-	slog.Info("selected local fs:", "folder", folder)
+	slog.Info("selected JSON fs:", "folder", folder)
 	return &Json{
 		Folder: folder,
 	}
