@@ -79,7 +79,7 @@ func (fs Csv) Get(filename string) (any, error) {
 	if err != nil {
 		return nil, errors.New("table " + filename + " not found")
 	}
-	defer f.Close()
+	defer f.Close() //nolint:errcheck
 
 	reader := csv.NewReader(f)
 	reader.Comma = ';'
@@ -136,7 +136,6 @@ func (fs Csv) Ls() ([]string, error) {
 // creates new localFS instance with settings applied
 func SetupCSV() *Csv {
 	folder := selectFolder()
-
 	if _, err := os.Stat(folder); os.IsNotExist(err) {
 		slog.Debug("created folder", "folder", folder)
 		if err := os.Mkdir(folder, 0755); err != nil {
@@ -144,9 +143,7 @@ func SetupCSV() *Csv {
 			os.Exit(1)
 		}
 	}
-
 	slog.Info("selected CSV fs:", "folder", folder)
-
 	return &Csv{
 		Folder: folder,
 	}
