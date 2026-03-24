@@ -21,8 +21,12 @@ func (fs Csv) getPath(filename string) string {
 
 // creates empty (or prefilled) CSV file at path
 func (fs Csv) Put(filename string, value any) error {
-	path := fs.getPath(filename)
+	rows, ok := value.([]map[string]any)
+	if !ok {
+		return errors.New("value must be an array to write to csv")
+	}
 
+	path := fs.getPath(filename)
 	f, err := os.Create(path)
 	if err != nil {
 		return err
@@ -33,16 +37,7 @@ func (fs Csv) Put(filename string, value any) error {
 	writer.Comma = ';'
 	defer writer.Flush()
 
-	if value == nil {
-		return nil
-	}
-
-	rows, ok := value.([]map[string]any)
-	if !ok {
-		return errors.New("value must be []map[string]any")
-	}
-
-	if len(rows) == 0 {
+	if value == nil || len(rows) == 0 {
 		return nil
 	}
 
@@ -67,7 +62,6 @@ func (fs Csv) Put(filename string, value any) error {
 			return err
 		}
 	}
-
 	return nil
 }
 
@@ -82,7 +76,7 @@ func (fs Csv) Get(filename string) (any, error) {
 	defer f.Close() //nolint:errcheck
 
 	reader := csv.NewReader(f)
-	reader.Comma = ';'
+	reader.Comma = ';' // NOTE: read this from file with utils
 
 	records, err := reader.ReadAll()
 	if err != nil {
@@ -122,14 +116,12 @@ func (fs Csv) Ls() ([]string, error) {
 	if err != nil {
 		return result, err
 	}
-
 	for _, f := range files {
 		if filepath.Ext(f.Name()) == ".csv" {
 			filename := strings.TrimSuffix(f.Name(), ".csv")
 			result = append(result, filename)
 		}
 	}
-
 	return result, nil
 }
 

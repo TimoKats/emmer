@@ -21,7 +21,6 @@ type Cache struct {
 type Session struct {
 	commits int
 	config  Config
-	fs      emmerFs.File
 	cache   Cache
 }
 
@@ -33,6 +32,7 @@ type Response struct {
 }
 
 type Request struct {
+	Fs     emmerFs.File
 	Method string // get, put, delete
 	Table  string
 	Key    []string

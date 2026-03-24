@@ -2,7 +2,6 @@ package server
 
 import (
 	"errors"
-	"log/slog"
 
 	"fmt"
 	"net/http"
@@ -11,28 +10,31 @@ import (
 var session Session
 
 // helper function that selects the interface based on the URL path
-func ApiHandler(w http.ResponseWriter, r *http.Request) {
-	var response Response
-	request, parseErr := parseRequest(r)
-	item, itemErr := setItem(request)
-	if err := errors.Join(parseErr, itemErr); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest) // to response
-		return
-	}
-	switch request.Method {
-	case "PUT":
-		response = item.Add(request)
-	case "DELETE":
-		response = item.Del(request)
-	case "GET":
-		response = item.Get(request)
-	default:
-		http.Error(w, "use put/del/get", http.StatusMethodNotAllowed)
-		return
-	}
-	if err := parseResponse(w, response); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+func CrudHandler(filetype string) http.HandlerFunc {
+	fs := getFs(filetype)
+	return func(w http.ResponseWriter, r *http.Request) {
+		var response Response
+		request, parseErr := parseRequest(r, fs)
+		item, itemErr := setItem(request) // item is a table or entry to edit
+		if err := errors.Join(parseErr, itemErr); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		switch request.Method {
+		case "PUT":
+			response = item.Add(request)
+		case "DELETE":
+			response = item.Del(request)
+		case "GET":
+			response = item.Get(request)
+		default:
+			http.Error(w, "use put/del/get", http.StatusMethodNotAllowed)
+			return
+		}
+		if err := parseResponse(w, response); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -47,15 +49,16 @@ func CommitHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "use post", http.StatusMethodNotAllowed)
 		return
 	}
-	for filename, data := range session.cache.data {
-		err := session.fs.Put(filename, data)
-		if err != nil {
-			slog.Error("error writing cache:", "file", filename)
-		} else {
-			slog.Debug("cache written to filesystem:", "file", filename)
-			fmt.Fprint(w, "cache written to filesystem") //nolint:errcheck
-		}
-	}
+	// TODO: !!!
+	// for filename, data := range session.cache.data {
+	// 	err := session.fs.Put(filename, data)
+	// 	if err != nil {
+	// 		slog.Error("error writing cache:", "file", filename)
+	// 	} else {
+	// 		slog.Debug("cache written to filesystem:", "file", filename)
+	// 		fmt.Fprint(w, "cache written to filesystem") //nolint:errcheck
+	// 	}
+	// }
 }
 
 // clears cache memory, only accepts delete requests
@@ -103,6 +106,5 @@ func Configure() {
 	}
 	// session object
 	session.cache.data = make(map[string]any)
-	session.fs = initConnector()
 	session.commits = 1
 }

@@ -43,17 +43,16 @@ func getErrorCode(message string) int {
 }
 
 // get HTTP request and format it into Request object used by server
-func parseRequest(r *http.Request) (Request, error) {
-	request := Request{Method: r.Method, Mode: r.FormValue("mode")}
-	urlPath := r.URL.Path[len("/api/"):]
-	urlItems := strings.Split(urlPath, "/")
-	if len(urlItems) > 0 {
-		request.Table = urlItems[0]
-		if len(urlItems) > 1 {
-			request.Key = urlItems[1:]
+func parseRequest(r *http.Request, fs emmerFs.File) (Request, error) {
+	request := Request{Method: r.Method, Mode: r.FormValue("mode"), Fs: fs}
+	urlItems := strings.Split(r.URL.Path, "/")
+	if len(urlItems) > 2 {
+		request.Table = urlItems[2]
+		if len(urlItems) > 3 {
+			request.Key = urlItems[3:]
 		}
 	}
-	if strings.Contains(urlPath, "..") {
+	if strings.Contains(r.URL.Path, "..") {
 		return request, errors.New("invalid path: parent directory")
 	}
 	// parse request body
@@ -82,28 +81,28 @@ func parseResponse(w http.ResponseWriter, response Response) error {
 }
 
 // tries reading data from cache, reads from filesystem as backup
-func read(filename string, mode string) (any, error) {
-	if data, ok := session.cache.data[filename]; ok && mode != "fs" {
+func read(request Request) (any, error) {
+	if data, ok := session.cache.data[request.Table]; ok && request.Mode != "fs" {
 		slog.Debug("reading data from cache")
 		return data, nil
 	}
 	slog.Debug("reading data from filesystem")
-	data, err := session.fs.Get(filename) // NOTE: returns only {}
+	data, err := request.Fs.Get(request.Table) // NOTE: returns only {}
 	if err == nil {
-		session.cache.data[filename] = data
+		session.cache.data[request.Table] = data
 	}
 	return data, err
 }
 
 // write to cache, and potentially to filesystem (depending on commit strategy)
-func write(table string, data any) error {
+func write(request Request, data any) error {
 	if data == nil {
 		data = make(map[string]any)
 	}
-	session.cache.data[table] = data
+	session.cache.data[request.Table] = data
 	if session.config.commit == session.commits {
 		slog.Debug("writing to filesystem")
-		err := session.fs.Put(table, data)
+		err := request.Fs.Put(request.Table, data)
 		session.commits = 0
 		if err != nil {
 			return err
@@ -261,6 +260,16 @@ func setAccess(method string) int {
 	return level
 }
 
+// returns the file to use for CRUD operations based on.
+func getFs(filetype string) emmerFs.File {
+	switch filetype {
+	case "csv":
+		return emmerFs.SetupCSV()
+	default:
+		return emmerFs.SetupJSON()
+	}
+}
+
 // generates (or) selects a username and password
 func initCredentials() (string, string) {
 	username := os.Getenv("EM_USERNAME")
@@ -276,11 +285,6 @@ func initCredentials() (string, string) {
 		slog.Warn("set credentials:", "password", password)
 	}
 	return username, password
-}
-
-// selects the connector (fs interface) based on env variable
-func initConnector() emmerFs.File {
-	return emmerFs.SetupJSON()
 }
 
 // selects the number of operations needed before a write action to fs

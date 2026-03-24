@@ -11,14 +11,15 @@ import (
 func serve() {
 	server.Configure()
 	http.HandleFunc("/ping", server.PingHandler)
-	http.HandleFunc("/api/", server.ApiHandler)
+	http.HandleFunc("/json/", server.CrudHandler("json"))
+	http.HandleFunc("/csv/", server.CrudHandler("csv"))
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func TestBasicPut(t *testing.T) {
 	server.ClearCache()
-	file := testFile()
-	request("PUT", "/api/test", `{"foo":1}`)
+	file := testFile("json")
+	request("PUT", "/json/test", `{"foo":1}`)
 	expected := map[string]any{"foo": 1}
 	result := readJson(file)
 	if !jsonEqual(result, expected) {
@@ -28,9 +29,9 @@ func TestBasicPut(t *testing.T) {
 
 func TestNestedPut(t *testing.T) {
 	server.ClearCache()
-	file := testFile()
-	request("PUT", "/api/test", `{"foo":1}`)
-	request("PUT", "/api/test/1", `2`)
+	file := testFile("json")
+	request("PUT", "/json/test", `{"foo":1}`)
+	request("PUT", "/json/test/1", `2`)
 	expected := map[string]any{"foo": 1, "1": 2}
 	result := readJson(file)
 	if !jsonEqual(result, expected) {
@@ -40,9 +41,9 @@ func TestNestedPut(t *testing.T) {
 
 func TestAppend(t *testing.T) {
 	server.ClearCache()
-	file := testFile()
-	request("PUT", "/api/test", `{"list":1}`)
-	request("PUT", "/api/test/list?mode=append", `2`)
+	file := testFile("json")
+	request("PUT", "/json/test", `{"list":1}`)
+	request("PUT", "/json/test/list?mode=append", `2`)
 	expected := map[string]any{"list": []int{1, 2}}
 	result := readJson(file)
 	if !jsonEqual(result, expected) {
@@ -52,9 +53,9 @@ func TestAppend(t *testing.T) {
 
 func TestIncrement(t *testing.T) {
 	server.ClearCache()
-	file := testFile()
-	request("PUT", "/api/test", `{"list":1}`)
-	request("PUT", "/api/test/list?mode=increment", `2`)
+	file := testFile("json")
+	request("PUT", "/json/test", `{"list":1}`)
+	request("PUT", "/json/test/list?mode=increment", `2`)
 	expected := map[string]any{"list": 3}
 	result := readJson(file)
 	if !jsonEqual(result, expected) {
@@ -64,11 +65,11 @@ func TestIncrement(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	server.ClearCache()
-	file := testFile()
-	request("PUT", "/api/test", `{"foo":"test"}`)
-	request("PUT", "/api/test/bar/something", `"else"`)
+	file := testFile("json")
+	request("PUT", "/json/test", `{"foo":"test"}`)
+	request("PUT", "/json/test/bar/something", `"else"`)
 	result1 := readJson(file)
-	request("DELETE", "/api/test/bar", ``)
+	request("DELETE", "/json/test/bar", ``)
 	expected1 := map[string]any{"foo": "test", "bar": map[string]any{"something": "else"}}
 	expected2 := map[string]any{"foo": "test"}
 	result2 := readJson(file)
@@ -79,10 +80,10 @@ func TestDelete(t *testing.T) {
 
 func TestDeleteList(t *testing.T) {
 	server.ClearCache()
-	file := testFile()
-	request("PUT", "/api/test", `[1,2,3,["a","b","c"]]`)
+	file := testFile("json")
+	request("PUT", "/json/test", `[1,2,3,["a","b","c"]]`)
 	result1 := readJson(file)
-	request("DELETE", "/api/test/3", ``)
+	request("DELETE", "/json/test/3", ``)
 	expected1 := []any{1, 2, 3, []string{"a", "b", "c"}}
 	expected2 := []any{1, 2, 3, nil}
 	result2 := readJson(file)
@@ -96,10 +97,10 @@ func TestDeleteList(t *testing.T) {
 func TestCache(t *testing.T) {
 	t.Setenv("EM_COMMITS", "2")
 	server.Configure()
-	file := testFile()
-	request("PUT", "/api/test", `{"foo":"test"}`)
+	file := testFile("json")
+	request("PUT", "/json/test", `{"foo":"test"}`)
 	result1 := readJson(file)
-	request("PUT", "/api/test/bar/something", `"else"`)
+	request("PUT", "/json/test/bar/something", `"else"`)
 	result2 := readJson(file)
 	expected := map[string]any{"foo": "test", "bar": map[string]any{"something": "else"}}
 	if result1 != nil || !jsonEqual(result2, expected) {
@@ -108,7 +109,7 @@ func TestCache(t *testing.T) {
 }
 
 func TestBadRequest(t *testing.T) {
-	status := request("PUT", "/api/test--..--test", `{"foo":"test"}`)
+	status := request("PUT", "/json/test--..--test", `{"foo":"test"}`)
 	if status != 400 {
 		t.Errorf("Request to parent directory did not get filtered.")
 	}
@@ -116,8 +117,8 @@ func TestBadRequest(t *testing.T) {
 
 func TestBadIncrement(t *testing.T) {
 	server.ClearCache()
-	request("PUT", "/api/test", `{"foo":"test"}`)
-	status := request("PUT", "/api/test/foo?mode=increment", `2`)
+	request("PUT", "/json/test", `{"foo":"test"}`)
+	status := request("PUT", "/json/test/foo?mode=increment", `2`)
 	if status != 400 {
 		t.Errorf("Bad increment request did not get the correct error code.")
 	}
@@ -125,8 +126,8 @@ func TestBadIncrement(t *testing.T) {
 
 func TestAutoCreateTable(t *testing.T) {
 	server.ClearCache()
-	file := testFile()
-	request("PUT", "/api/test/something", `2`)
+	file := testFile("json")
+	request("PUT", "/json/test/something", `2`)
 	expected := map[string]any{"something": 2}
 	result := readJson(file)
 	if !jsonEqual(result, expected) {
@@ -136,9 +137,9 @@ func TestAutoCreateTable(t *testing.T) {
 
 func TestNotFound(t *testing.T) {
 	server.ClearCache()
-	testFile()
-	request("PUT", "/api/test", `{"foo":"test"}`)
-	status := request("GET", "/api/test/something", `2`)
+	testFile("json")
+	request("PUT", "/json/test", `{"foo":"test"}`)
+	status := request("GET", "/json/test/something", `2`)
 	if status != 404 {
 		t.Errorf("Not found did not get the correct error code.")
 	}
@@ -146,11 +147,20 @@ func TestNotFound(t *testing.T) {
 
 func TestClearCache(t *testing.T) {
 	request("DELETE", "/cache", ``)
-	request("PUT", "/api/test", `{"foo":"test"}`)
-	status := request("GET", "/api/test", ``)
+	request("PUT", "/json/test", `{"foo":"test"}`)
+	status := request("GET", "/json/test", ``)
 	if status != 200 {
 		t.Errorf("Cache reset did not work properly.")
 	}
+}
+
+func TestCSVBasic(t *testing.T) {
+	server.ClearCache()
+	file := testFile("csv")
+	request("PUT", "/csv/test", `[{"foo":"test"}, {"bar":"test"}]`)
+	expected := []string{"foo;test", "bar;test"}
+	result := readCsv(file)
+	log.Println(expected, result)
 }
 
 func init() {
