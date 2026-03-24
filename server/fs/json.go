@@ -6,41 +6,20 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 )
 
-type LocalFS struct {
+type Json struct {
 	Folder string
 }
 
 // takes filename and returns full path + extension to json file
-func (fs LocalFS) getPath(filename string) string {
+func (fs Json) getPath(filename string) string {
 	return filepath.Join(fs.Folder, filename) + ".json"
 }
 
-// selects folder based on OS and env variables of the user
-func selectFolder() string {
-	// user select
-	if folder := os.Getenv("EM_FOLDER"); folder != "" {
-		return folder
-	}
-	// defaults
-	if runtime.GOOS == "windows" {
-		// Use %AppData% on Windows
-		return filepath.Join(os.Getenv("AppData"), "emmer")
-	} else {
-		// Use XDG_DATA_HOME on linux (if exists)
-		xdgData := os.Getenv("XDG_DATA_HOME")
-		if xdgData == "" {
-			return filepath.Join(os.Getenv("HOME"), ".local", "share", "emmer")
-		}
-		return filepath.Join(xdgData, "emmer")
-	}
-}
-
 // creates empty (or prefilled) JSON file at path
-func (fs LocalFS) Put(filename string, value any) error {
+func (fs Json) Put(filename string, value any) error {
 	path := fs.getPath(filename)
 	f, err := os.Create(path)
 	if err != nil {
@@ -57,7 +36,7 @@ func (fs LocalFS) Put(filename string, value any) error {
 }
 
 // reads JSON file into map[string]any variable
-func (fs LocalFS) Get(filename string) (any, error) {
+func (fs Json) Get(filename string) (any, error) {
 	// get raw data
 	mapping := make(map[string]any)
 	list := []any{}
@@ -76,13 +55,13 @@ func (fs LocalFS) Get(filename string) (any, error) {
 }
 
 // removes entire JSON file
-func (fs LocalFS) Del(filename string) error {
+func (fs Json) Del(filename string) error {
 	path := fs.getPath(filename)
 	return os.Remove(path)
 }
 
 // list json files in fs folder
-func (fs LocalFS) Ls() ([]string, error) {
+func (fs Json) Ls() ([]string, error) {
 	files, err := os.ReadDir(fs.Folder)
 	result := []string{}
 	if err != nil {
@@ -99,7 +78,7 @@ func (fs LocalFS) Ls() ([]string, error) {
 }
 
 // creates new localFS instance with settings applied
-func SetupLocal() *LocalFS {
+func SetupJSON() *Json {
 	folder := selectFolder()
 	// create selected folder if it doesn't exist
 	if _, err := os.Stat(folder); os.IsNotExist(err) {
@@ -109,8 +88,8 @@ func SetupLocal() *LocalFS {
 			os.Exit(1)
 		}
 	}
-	slog.Info("selected local fs:", "folder", folder)
-	return &LocalFS{
+	slog.Info("selected JSON fs:", "folder", folder)
+	return &Json{
 		Folder: folder,
 	}
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"log"
@@ -24,6 +25,24 @@ func readJson(filename string) any {
 	return data
 }
 
+// read csv file at testCsv location into list
+func readCsv(filename string) []string {
+	file, err := os.Open(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+	var lines []string
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+	return lines
+}
+
 // test if two maps are equal (loosly/stringified)
 func jsonEqual(a, b any) bool {
 	aByte, _ := json.Marshal(a) //nolint:errcheck
@@ -44,12 +63,12 @@ func request(method string, endpoint string, body string) int {
 }
 
 // create path to test file (GitHub actions uses EM_FOLDER) and delete current.
-func testFile() string {
+func testFile(ext string) string {
 	var folder string
 	if folder = os.Getenv("EM_FOLDER"); folder == "" {
 		folder = filepath.Join(os.Getenv("HOME"), ".local", "share", "emmer")
 	}
-	path := filepath.Join(folder, "test.json")
+	path := filepath.Join(folder, "test."+ext)
 	if err := os.Remove(path); err != nil {
 		log.Println("Error deleting test file:", err)
 	}

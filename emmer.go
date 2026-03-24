@@ -36,7 +36,8 @@ func main() {
 	http.HandleFunc("/ping", server.PingHandler)
 	http.HandleFunc("/commit", server.Auth(server.CommitHandler))
 	http.HandleFunc("/cache", server.Auth(server.CacheHandler))
-	http.HandleFunc("/api/", server.Auth(server.ApiHandler))
+	http.HandleFunc("/json/", server.Auth(server.CrudHandler("json")))
+	http.HandleFunc("/csv/", server.Auth(server.CrudHandler("csv")))
 
 	// start the server
 	slog.Info("started emmer:", "url", url, "version", version)

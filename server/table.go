@@ -12,11 +12,11 @@ type TableItem struct{}
 func (TableItem) Del(request Request) Response {
 	slog.Debug("delete:", "table", request.Table)
 	// check if table exists
-	if _, err := read(request.Table, request.Mode); err != nil {
+	if _, err := read(request); err != nil {
 		return Response{Data: nil, Error: err}
 	}
 	// delete file (and reset cache)
-	err := session.fs.Del(request.Table)
+	err := request.Fs.Del(request.Table)
 	session.cache.tables = nil
 	delete(session.cache.data, request.Table)
 	return Response{Data: "deleted " + request.Table, Error: err}
@@ -26,7 +26,7 @@ func (TableItem) Del(request Request) Response {
 func (TableItem) Add(request Request) Response {
 	slog.Debug("create:", "table", request.Table)
 	// check if table already exists
-	_, err := read(request.Table, request.Mode)
+	_, err := read(request)
 	if err == nil {
 		return Response{Data: nil, Error: errors.New("table already exists")}
 	}
@@ -34,7 +34,7 @@ func (TableItem) Add(request Request) Response {
 		return Response{Data: nil, Error: errors.New("body not valid json")}
 	}
 	// create table
-	if err = write(request.Table, request.Value); err == nil {
+	if err = write(request, request.Value); err == nil {
 		session.cache.tables = append(session.cache.tables, request.Table)
 	}
 	return Response{Data: "added " + request.Table, Error: err}
@@ -45,7 +45,7 @@ func (TableItem) Get(request Request) Response {
 	slog.Debug("query:", "table", request.Table)
 	// fetch all tables
 	if len(session.cache.tables) == 0 {
-		files, err := session.fs.Ls()
+		files, err := request.Fs.Ls()
 		if err != nil {
 			return Response{Data: nil, Error: err}
 		}
